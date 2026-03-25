@@ -68,16 +68,21 @@
     }
 
     .card { 
-        padding: 25px; 
-        border-radius: 15px; 
-        background: rgba(255, 255, 255, 0.1); /* Mais transparente que o container */
-        backdrop-filter: blur(5px); /* Blur menor interno */
-        -webkit-backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        width: 100%;
-        box-sizing: border-box;
-    }
+    padding: 25px; 
+    border-radius: 15px; 
+    
+    /* NOVA COR TRANSLÚCIDA (Vidro Fosco) */
+    /* Usamos um preto bem transparente (rgba(0,0,0,0.4)) */
+    background: rgba(0, 0, 0, 0.4); 
+    
+    /* Mantemos o blur e aumentamos um pouco a borda */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Borda branca bem sutil */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Sombra mais escura */
+    width: 100%;
+    box-sizing: border-box;
+}
 
     /* Mantém o fundo do setup visível quando centralizado */
     #setup.card {
