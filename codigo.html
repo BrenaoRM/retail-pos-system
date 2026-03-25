@@ -45,7 +45,7 @@
             <div class="card card-salao">
                 <h3>🍽️ SALÃO</h3>
                 <div class="input-group">
-                    <label>Vendas no Relatório (Web Cardápio):</label>
+                    <label>Vendas Totais no Web Cardápio (Mesas):</label>
                     <input type="number" id="vendaSistSalao" step="0.01">
                 </div>
                 <hr>
@@ -58,7 +58,7 @@
                     <input type="number" id="maqSalao" step="0.01">
                 </div>
                 <div class="input-group">
-                    <label>Dinheiro Físico (Gaveta):</label>
+                    <label>Dinheiro Físico Total (Gaveta):</label>
                     <input type="number" id="dinSalao" step="0.01">
                 </div>
             </div>
@@ -66,11 +66,11 @@
             <div class="card card-delivery">
                 <h3>🛵 DELIVERY / RETIRADA</h3>
                 <div class="input-group">
-                    <label>Relatório Web Cardápio (Delivery):</label>
+                    <label>Vendas totais no Web Cardápio (Delivery e Retirada):</label>
                     <input type="number" id="vendaWebDeliv" step="0.01" placeholder="0.00">
                 </div>
                 <div class="input-group">
-                    <label>Relatório App Bundi:</label>
+                    <label>Vendas totais no Bundi (Delivery):</label>
                     <input type="number" id="vendaBundiDeliv" step="0.01" placeholder="0.00">
                 </div>
                 <hr>
@@ -128,13 +128,11 @@
     function gerarRelatorio() {
         // --- CÁLCULO SALÃO ---
         const sistSalao = Number(document.getElementById('vendaSistSalao').value);
-        const realSalao = (Number(document.getElementById('dinSalao').value) - Number(document.getElementById('caixaInicial').value)) + 
-                          Number(document.getElementById('maqSalao').value);
+        const realSalao = (Number(document.getElementById('dinSalao').value) - Number(document.getElementById('caixaInicial').value)) + Number(document.getElementById('maqSalao').value);
         const difSalao = realSalao - sistSalao;
 
         // --- CÁLCULO DELIVERY ---
-        const sistDeliv = Number(document.getElementById('vendaWebDeliv').value) + 
-                  Number(document.getElementById('vendaBundiDeliv').value);
+        const sistDeliv = Number(document.getElementById('vendaWebDeliv').value) + Number(document.getElementById('vendaBundiDeliv').value);
         const maqRetirada = Number(document.getElementById('maqRetirada').value);
         
         let totalMaqEnt = 0;
