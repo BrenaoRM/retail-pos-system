@@ -11,9 +11,9 @@
         --success: #27ae60;
         --danger: #c0392b;
         /* Película escura sutil sobre o fundo para dar contraste */
-        --bg-overlay: rgba(0, 0, 0, 0.5); 
+        --bg-overlay: rgba(0, 0, 0, 0.7); 
         /* Cor de fundo dos cards (branca bem transparente) */
-        --card-bg: rgba(255, 255, 255, 0.15);
+        --card-bg: rgba(0, 0, 0, 0.4);
         /* Cor do texto (branca para contrastar com o fundo escuro) */
         --text-color: #fff;
     }
@@ -45,15 +45,16 @@
         flex-direction: column;
         transition: all 0.5s ease;
         
-        /* EFEITO DE VIDRO FOSCO NO CONTAINER PRINCIPAL */
+        /* FUNDO ESCURO COM BLUR */
         background: var(--card-bg);
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
+        
         border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1); /* Borda bem fina e escura */
         padding: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
 
     /* Ajuste para centralizar o menu de setup */
     .centering-setup {
@@ -68,22 +69,16 @@
     }
 
     .card { 
-    padding: 25px; 
-    border-radius: 15px; 
-    
-    /* NOVA COR TRANSLÚCIDA (Vidro Fosco) */
-    /* Usamos um preto bem transparente (rgba(0,0,0,0.4)) */
-    background: rgba(0, 0, 0, 0.4); 
-    
-    /* Mantemos o blur e aumentamos um pouco a borda */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Borda branca bem sutil */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); /* Sombra mais escura */
-    width: 100%;
-    box-sizing: border-box;
+        padding: 25px; 
+        border-radius: 15px; 
+        background: rgba(0, 0, 0, 0.5); /* Garante que o fundo seja preto translúcido */
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        box-sizing: border-box;
 }
-
     /* Mantém o fundo do setup visível quando centralizado */
     #setup.card {
         background: rgba(0, 0, 0, 0.5);
@@ -177,7 +172,7 @@
     }
     .dif-negativa { 
         border-left: 10px solid var(--danger); 
-        background: rgba(183, 28, 28, 0.8); /* Vermelho escuro translúcido */
+        background: rgba(183, 28, 28, 0.4); /* Vermelho escuro translúcido */
         color: #ffebee;
     }
     
@@ -330,7 +325,7 @@
             totalDinEnt += vD;
             htmlEntregadores += `
                 <li style="margin-bottom: 8px; list-style: none; padding: 8px; border-bottom: 1px dashed #bbb;">
-                    <strong>🛵 ${nome}:</strong> ${qtd} entregas <br>
+                    <strong>${nome}:</strong> <br> 🛵 ${qtd} entregas <br>
                     <span>💳 Maquininha: R$ ${vM.toFixed(2)}</span> | <span>💵 Dinheiro: R$ ${vD.toFixed(2)}</span><br>
                     <span>💰 <strong>Total: R$ ${totalInd.toFixed(2)}</strong></span>
                 </li>`;
@@ -349,14 +344,17 @@
             <div class="grid-setores">
                 <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 10px;">
                     <h4 style="color:var(--salao); margin-top:0;">🍽️ SALÃO</h4>
-                    <p>App: R$ ${sistSalao.toFixed(2)}</p>
+                    <p>Vendas (Esperado): R$ ${sistSalao.toFixed(2)}</p>
+                    <p>Real (Recebido): R$ ${realSalao.toFixed(2)}</p>
                     <p>🍔 Excedente: - R$ ${excedente.toFixed(2)}</p>
+                    <hr>
                     <p><strong>Diferença: R$ ${difSalao.toFixed(2)}</strong></p>
                 </div>
                 <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 10px;">
                     <h4 style="color:var(--delivery); margin-top:0;">🛵 DELIVERY</h4>
-                    <p>Apps: R$ ${sistDeliv.toFixed(2)}</p>
-                    <p>Real: R$ ${realDeliv.toFixed(2)}</p>
+                    <p>Vendas (Esperado): R$ ${sistDeliv.toFixed(2)}</p>
+                    <p>Real (Recebido): R$ ${realDeliv.toFixed(2)}</p>
+                    <hr>
                     <p><strong>Diferença: R$ ${difDeliv.toFixed(2)}</strong></p>
                 </div>
             </div>
