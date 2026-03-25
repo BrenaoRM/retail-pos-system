@@ -43,7 +43,7 @@
         width: 100%;
         display: flex;
         flex-direction: column;
-        transition: all 0.5s ease;
+        transition: background 0.5s ease, border 0.5s ease, box-shadow 0.5s ease;
         
         /* FUNDO ESCURO COM BLUR */
         background: var(--card-bg);
@@ -364,18 +364,18 @@
         resDiv.className = (Math.abs(difSalao + difDeliv) < 1) ? 'dif-positiva' : 'dif-negativa';
 
         resDiv.innerHTML = `
-            <h3 style="text-align: center;">📋 RESULTADO DO FECHAMENTO</h3>
+            <h3 class="titulo-relatorio">📋 RESULTADO DO FECHAMENTO</h3>
             <div class="grid-setores">
-                <div style="background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px;">
-                    <h4 style="color:var(--salao); margin-top:0;">🍽️ SALÃO</h4>
+                <div class="card-resultado">
+                    <h4 class="tit-salao">🍽️ SALÃO</h4>
                     <p>Vendas (Esperado): R$ ${sistSalao.toFixed(2)}</p>
                     <p>Real (Recebido): R$ ${realSalao.toFixed(2)}</p>
                     <p>🍔 Excedente: - R$ ${excedente.toFixed(2)}</p>
                     <hr>
                     <p><strong>Diferença: R$ ${difSalao.toFixed(2)}</strong></p>
                 </div>
-                <div style="background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px;">
-                    <h4 style="color:var(--delivery); margin-top:0;">🛵 DELIVERY</h4>
+                <div class="card-resultado">
+                    <h4 class="tit-delivery">🛵 DELIVERY</h4>
                     <p>Vendas (Esperado): R$ ${sistDeliv.toFixed(2)}</p>
                     <p>Real (Recebido): R$ ${(maqRetirada + totalMaqEnt + totalDinEnt).toFixed(2)}</p>
                     <p>⛽ Gasto Combustível: + R$ ${totalGasEnt.toFixed(2)}</p>
@@ -385,10 +385,10 @@
             </div>
             <hr>
             <h4>📦 Acertos Motoboys (${totalEntregas} total):</h4>
-            <ul style="padding-left: 0;">${htmlEntregadores}</ul>
+            <ul class="lista-motoboys">${htmlEntregadores}</ul>
             <hr>
-            <div style="text-align: center;">
-                <h2 style="margin:10px 0">💵 Diferença Total: R$ ${(difSalao + difDeliv).toFixed(2)}</h2>
+            <div class="res-final">
+                <h2>💵 Diferença Total: R$ ${(difSalao + difDeliv).toFixed(2)}</h2>
                 <p>${Math.abs(difSalao + difDeliv) < 1 ? "✅ Caixa Fechado!" : "⚠️ Verifique as divergências."}</p>
             </div>
         `;
