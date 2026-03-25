@@ -211,8 +211,8 @@
     .lbl-micro { font-size: 10px; }
     
     .card-resultado { background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px; }
-    .tit-salao { color: var(--salao); margin-top: 0; }
-    .tit-delivery { color: var(--delivery); margin-top: 0; }
+    .tit-salao { color: var(--salao); margin-top: 0; text-align: center; }
+    .tit-delivery { color: var(--delivery); margin-top: 0; text-align: center; }
     
     .lista-motoboys { padding-left: 0; }
     .item-motoboy { margin-bottom: 8px; list-style: none; padding: 8px; border-bottom: 1px dashed #bbb; }
@@ -403,16 +403,16 @@
             <div class="grid-setores">
                 <div class="card-resultado">
                     <h4 class="tit-salao">🍽️ SALÃO</h4>
-                    <p>Vendas (Esperado): R$ ${sistSalao.toFixed(2)}</p>
-                    <p>Real (Recebido): R$ ${realSalao.toFixed(2)}</p>
+                    <p>📈 Vendas (Esperado): R$ ${sistSalao.toFixed(2)}</p>
+                    <p>💵 Real (Recebido): R$ ${realSalao.toFixed(2)}</p>
                     <p>🍔 Excedente: - R$ ${excedente.toFixed(2)}</p>
                     <hr>
                     <p><strong>Diferença: R$ ${difSalao.toFixed(2)}</strong></p>
                 </div>
                 <div class="card-resultado">
                     <h4 class="tit-delivery">🛵 DELIVERY</h4>
-                    <p>Vendas (Esperado): R$ ${sistDeliv.toFixed(2)}</p>
-                    <p>Real (Recebido): R$ ${(maqRetirada + totalMaqEnt + totalDinEnt).toFixed(2)}</p>
+                    <p>📈 Vendas (Esperado): R$ ${sistDeliv.toFixed(2)}</p>
+                    <p>💵 Real (Recebido): R$ ${(maqRetirada + totalMaqEnt + totalDinEnt).toFixed(2)}</p>
                     <p>⛽ Gasto Combustível: + R$ ${totalGasEnt.toFixed(2)}</p>
                     <hr>
                     <p><strong>Diferença: R$ ${difDeliv.toFixed(2)}</strong></p>
