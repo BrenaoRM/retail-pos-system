@@ -44,7 +44,6 @@
         background-color: #2c3e50; 
         background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/background.jpg'); 
         background-size: cover;
-        background-position: center;
         will-change: transform; /* Avisa o navegador para usar aceleração de hardware */
     }
 
@@ -53,14 +52,13 @@
         margin: auto; 
         width: 100%;
         display: flex;
+        contain: layout style paint; /* Isola a renderização do container */
         flex-direction: column;
         transition: background 0.5s ease, border 0.5s ease, box-shadow 0.5s ease;
         
         /* FUNDO ESCURO COM BLUR */
         background: var(--card-bg);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        
+
         border-radius: 15px;
         border: 1px solid rgba(255, 255, 255, 0.1); /* Borda bem fina e escura */
         padding: 20px;
@@ -229,7 +227,7 @@
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    .anima-fade { animation: slideUpFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+    .anima-fade { animation: slideUpFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; will-change: transform, opacity; }
 </style>
 </head>
 <body>
@@ -398,7 +396,9 @@
         const classeBase = (Math.abs(difSalao + difDeliv) < 1) ? 'dif-positiva' : 'dif-negativa';
         resDiv.className = `${classeBase} anima-fade`; /* Mantém a cor e adiciona a animação */
 
-        resDiv.innerHTML = `
+        // Use insertAdjacentHTML para evitar a recriação completa do DOM
+        resDiv.innerHTML = ''; // Limpa o conteúdo existente
+        resDiv.insertAdjacentHTML('beforeend', `
             <h3 class="titulo-relatorio">📋 RESULTADO DO FECHAMENTO</h3>
             <div class="grid-setores">
                 <div class="card-resultado">
@@ -426,8 +426,8 @@
                 <h2>💵 Diferença Total: R$ ${(difSalao + difDeliv).toFixed(2)}</h2>
                 <p>${Math.abs(difSalao + difDeliv) < 1 ? "✅ Caixa Fechado!" : "⚠️ Verifique as divergências."}</p>
             </div>
-        `;
-        
+        `);
+
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 </script>
