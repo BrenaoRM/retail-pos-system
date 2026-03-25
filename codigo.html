@@ -61,6 +61,10 @@
                     <label>Dinheiro Físico Total (Gaveta):</label>
                     <input type="number" id="dinSalao" step="0.01">
                 </div>
+                <div class="input-group">
+                    <label>🍔 Excedente de Lanches (Pago por funcionários):</label>
+                    <input type="number" id="excedenteLanche" step="0.01" placeholder="R$ 0,00">
+                </div>
             </div>
 
             <div class="card card-delivery">
@@ -71,6 +75,7 @@
                 </div>
                 <div class="input-group">
                     <label>Vendas totais no Bundi (Delivery):</label>
+
                     <input type="number" id="vendaBundiDeliv" step="0.01" placeholder="0.00">
                 </div>
                 <hr>
@@ -128,8 +133,14 @@
     function gerarRelatorio() {
         // --- CÁLCULO SALÃO ---
         const sistSalao = Number(document.getElementById('vendaSistSalao').value);
-        const realSalao = (Number(document.getElementById('dinSalao').value) - Number(document.getElementById('caixaInicial').value)) + Number(document.getElementById('maqSalao').value);
-        const difSalao = realSalao - sistSalao;
+        const excedente = Number(document.getElementById('excedenteLanche').value); // Novo campo
+        const inicial = Number(document.getElementById('caixaInicial').value);
+    
+        // O valor real que você tem fisicamente (Dinheiro + Cartão do Salão)
+        const realSalao = (Number(document.getElementById('dinSalao').value) - inicial) + Number(document.getElementById('maqSalao').value);
+
+        // Diferença: Real - (Vendas Mesas + Dinheiro dos Lanches)
+        const difSalao = realSalao - (sistSalao + excedente);
 
         // --- CÁLCULO DELIVERY ---
         const sistDeliv = Number(document.getElementById('vendaWebDeliv').value) + Number(document.getElementById('vendaBundiDeliv').value);
@@ -146,44 +157,58 @@
 
         entregadores.forEach((nome, i) => {
             const qtd = Number(q[i].value);
-            const vM = Number(m[i].value);
-            const vD = Number(d[i].value);
+            const vM = Number(m[i].value); // Valor Maquininha
+            const vD = Number(d[i].value); // Valor Dinheiro
+            const totalIndividual = vM + vD;
             
             totalEntregas += qtd;
             totalMaqEnt += vM;
             totalDinEnt += vD;
-            htmlEntregadores += `<li>${nome}: ${qtd} ent. | R$ ${(vM + vD).toFixed(2)}</li>`;
+
+            // Novo layout detalhado com emojis por entregador
+            htmlEntregadores += `
+                <li style="margin-bottom: 8px; list-style: none; padding: 5px; border-bottom: 1px dashed #ccc;">
+                    <strong>🛵 ${nome}:</strong> ${qtd} entregas <br>
+                    <span>&nbsp;&nbsp;💳 Cartão: R$ ${vM.toFixed(2)}</span> | 
+                    <span>💵 Dinheiro: R$ ${vD.toFixed(2)}</span> <br>
+                    <span>&nbsp;&nbsp;💰 <strong>Total: R$ ${totalIndividual.toFixed(2)}</strong></span>
+                </li>`;
         });
 
         const realDeliv = maqRetirada + totalMaqEnt + totalDinEnt;
         const difDeliv = realDeliv - sistDeliv;
 
-        // --- EXIBIÇÃO ---
+        // --- ATUALIZAÇÃO DO LAYOUT DO RELATÓRIO ---
         const resDiv = document.getElementById('resultado');
         resDiv.style.display = 'block';
         resDiv.className = (Math.abs(difSalao + difDeliv) < 1) ? 'dif-positiva' : 'dif-negativa';
 
         resDiv.innerHTML = `
-            <h3>📋 Relatório de Diferenças Setoriais</h3>
+            <h3 style="text-align: center;">📋 Relatório de Diferenças Setoriais</h3>
             <div class="grid-setores">
-                <div>
-                    <h4 style="color:var(--salao)">Setor Salão</h4>
-                    Esperado (Sist): R$ ${sistSalao.toFixed(2)}<br>
-                    Real em Mãos: R$ ${realSalao.toFixed(2)}<br>
-                    <strong>Diferença: R$ ${difSalao.toFixed(2)}</strong>
+                <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px;">
+                    <h4 style="color:var(--salao); margin-top:0;">🍽️ Setor Salão</h4>
+                    <p>📉 Vendas App: R$ ${sistSalao.toFixed(2)}</p>
+                    <p>🍔 Excedente Lanches: R$ ${excedente.toFixed(2)}</p>
+                    <p>✅ Real em Mãos: R$ ${realSalao.toFixed(2)}</p>
+                    <p><strong>⚖️ Diferença: R$ ${difSalao.toFixed(2)}</strong></p>
                 </div>
-                <div>
-                    <h4 style="color:var(--delivery)">Setor Delivery</h4>
-                    Esperado (Sist): R$ ${sistDeliv.toFixed(2)}<br>
-                    Real em Mãos: R$ ${realDeliv.toFixed(2)}<br>
-                    <strong>Diferença: R$ ${difDeliv.toFixed(2)}</strong>
+            
+                <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px;">
+                    <h4 style="color:var(--delivery); margin-top:0;">🛵 Setor Delivery</h4>
+                    <p>📉 Esperado: R$ ${sistDeliv.toFixed(2)}</p>
+                    <p>✅ Real em Mãos: R$ ${realDeliv.toFixed(2)}</p>
+                    <p><strong>⚖️ Diferença: R$ ${difDeliv.toFixed(2)}</strong></p>
                 </div>
             </div>
             <hr>
-            <h4>Resumo dos Entregadores (${totalEntregas} entregas totais):</h4>
-            <ul>${htmlEntregadores}</ul>
+            <h4>📦 Detalhamento dos Entregadores (${totalEntregas} total):</h4>
+            <ul style="padding-left: 0;">${htmlEntregadores}</ul>
             <hr>
-            <h2 style="margin:10px 0">Diferença Total: R$ ${(difSalao + difDeliv).toFixed(2)}</h2>
+            <div style="text-align: center;">
+                <h2 style="margin:10px 0">💵 Diferença Total: R$ ${(difSalao + difDeliv).toFixed(2)}</h2>
+                <p>${Math.abs(difSalao + difDeliv) < 1 ? "✅ Tudo certo! O caixa bateu." : "⚠️ Atenção! Existe uma divergência no valor final."}</p>
+            </div>
         `;
     }
 </script>
