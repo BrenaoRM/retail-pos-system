@@ -182,6 +182,28 @@
     #listaEntregadoresDinamica label { color: #eee; }
     #listaEntregadoresDinamica div { color: var(--text-color); }
     hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 20px 0; }
+    
+    /* --- CLASSES UTILITÁRIAS (REFATORAÇÃO) --- */
+    .flex-col-center { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .input-qtd-setup { text-align: center; max-width: 150px; }
+    .input-nome { margin-bottom: 8px; }
+    .btn-confirm { background: #e67e22; }
+    .btn-confirm:hover { background: #d35400; }
+    
+    .card-motoboy { background: rgba(0, 0, 0, 0.4); padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255, 255, 255, 0.5); }
+    .grid-motoboy-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .lbl-micro { font-size: 10px; }
+    
+    .card-resultado { background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px; }
+    .tit-salao { color: var(--salao); margin-top: 0; }
+    .tit-delivery { color: var(--delivery); margin-top: 0; }
+    
+    .lista-motoboys { padding-left: 0; }
+    .item-motoboy { margin-bottom: 8px; list-style: none; padding: 8px; border-bottom: 1px dashed #bbb; }
+    
+    .res-final { text-align: center; }
+    .res-final h2 { margin: 10px 0; }
+    .titulo-relatorio { text-align: center; }
 </style>
 </head>
 <body>
@@ -191,8 +213,8 @@
 
     <div id="setup" class="card">
         <label>Quantos entregadores trabalharam hoje?</label>
-        <div style="display:flex; flex-direction: column; gap:10px; align-items: center;">
-            <input type="number" id="qtdEntregadores" placeholder="Ex: 3" style="text-align: center; max-width: 150px;">
+        <div class="flex-col-center">
+            <input type="number" id="qtdEntregadores" placeholder="Ex: 3" class="input-qtd-setup">
             <button class="btn btn-setup" onclick="configurarEntregadores()">Definir Equipe</button>
         </div>
         <div id="nomesArea"></div>
@@ -252,41 +274,47 @@
 
 <script>
     let entregadores = [];
+    
+    // Função utilitária para pegar valores numéricos de forma segura
+    const getValor = (id) => Number(document.getElementById(id).value) || 0;
 
     function configurarEntregadores() {
-        const qtd = document.getElementById('qtdEntregadores').value;
+        const qtd = getValor('qtdEntregadores');
         if(!qtd || qtd <= 0) return alert("Insira a quantidade de entregadores.");
         
         const area = document.getElementById('nomesArea');
-        area.innerHTML = '<br><label>Nomes dos Entregadores:</label>';
+        let html = '<br><label>Nomes dos Entregadores:</label>';
+        
         for(let i=0; i<qtd; i++) {
-            area.innerHTML += `<input type="text" class="nome-ent" placeholder="Nome ${i+1}" style="margin-bottom:8px;">`;
+            html += `<input type="text" class="nome-ent input-nome" placeholder="Nome ${i+1}">`;
         }
-        // Botão na parte de baixo como solicitado
-        area.innerHTML += `<br><button class="btn btn-setup" style="background:#e67e22" onclick="confirmarNomes()">Confirmar e Abrir Caixa</button>`;
+        html += `<br><button class="btn btn-setup btn-confirm" onclick="confirmarNomes()">Confirmar e Abrir Caixa</button>`;
+        
+        area.innerHTML = html;
     }
 
     function confirmarNomes() {
         const inputs = document.querySelectorAll('.nome-ent');
-        entregadores = Array.from(inputs).map(i => i.value || "Entregador");
+        entregadores = Array.from(inputs).map(i => i.value.trim() || "Entregador");
         
         const areaDinamica = document.getElementById('listaEntregadoresDinamica');
-        areaDinamica.innerHTML = '<h4>Acerto dos Motoboys:</h4>';
+        let html = '<h4>Acerto dos Motoboys:</h4>';
         
         entregadores.forEach((nome, index) => {
-            areaDinamica.innerHTML += `
-                <div style="background:rgba(0, 0, 0, 0.4); padding:12px; border-radius:10px; margin-bottom:12px; border: 1px solid rgba(255, 255, 255, 0.5);">
+            html += `
+                <div class="card-motoboy">
                     <span class="badge-entrega">🙋 ${nome}</span>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px; margin-top:8px;">
-                        <div><label style="font-size:10px">🛵 Entregas</label><input type="number" class="e-qtd" placeholder="0"></div>
-                        <div><label style="font-size:10px">💳 Maquininha</label><input type="number" class="e-maq" placeholder="0.00"></div>
-                        <div><label style="font-size:10px">💵 Dinheiro</label><input type="number" class="e-din" placeholder="0.00"></div>
-                        <div><label style="font-size:10px">⛽ Gasolina</label><input type="number" class="e-gas" placeholder="0.00"></div>
+                    <div class="grid-motoboy-inputs">
+                        <div><label class="lbl-micro">🛵 Entregas</label><input type="number" class="e-qtd" placeholder="0"></div>
+                        <div><label class="lbl-micro">💳 Maquininha</label><input type="number" class="e-maq" placeholder="0.00"></div>
+                        <div><label class="lbl-micro">💵 Dinheiro</label><input type="number" class="e-din" placeholder="0.00"></div>
+                        <div><label class="lbl-micro">⛽ Gasolina</label><input type="number" class="e-gas" placeholder="0.00"></div>
                     </div>
                 </div>`;
         });
         
-        // Remove a centralização ao mostrar o formulário completo
+        areaDinamica.innerHTML = html;
+        
         document.getElementById('mainContainer').classList.remove('centering-setup');
         document.getElementById('formularioPrincipal').style.display = 'block';
         document.getElementById('setup').style.display = 'none';
@@ -294,48 +322,45 @@
 
     function gerarRelatorio() {
         // --- CÁLCULO SALÃO ---
-        const sistSalao = Number(document.getElementById('vendaSistSalao').value);
-        const excedente = Number(document.getElementById('excedenteLanche').value);
-        const inicial = Number(document.getElementById('caixaInicial').value);
+        const sistSalao = getValor('vendaSistSalao');
+        const excedente = getValor('excedenteLanche');
+        const inicial = getValor('caixaInicial');
         
-        // Dinheiro + Maquininha - Fundo de Caixa Inicial
-        const realSalao = (Number(document.getElementById('dinSalao').value) - inicial) + Number(document.getElementById('maqSalao').value);
-        
-        // Lógica: Subtraímos o excedente do real para ver se as vendas do App batem
+        const realSalao = (getValor('dinSalao') - inicial) + getValor('maqSalao');
         const difSalao = (realSalao - excedente) - sistSalao;
 
         // --- CÁLCULO DELIVERY ---
-        const sistDeliv = Number(document.getElementById('vendaWebDeliv').value) + Number(document.getElementById('vendaBundiDeliv').value);
-        const maqRetirada = Number(document.getElementById('maqRetirada').value);
+        const sistDeliv = getValor('vendaWebDeliv') + getValor('vendaBundiDeliv');
+        const maqRetirada = getValor('maqRetirada');
         
         let totalMaqEnt = 0, totalDinEnt = 0, totalEntregas = 0, totalGasEnt = 0;
         let htmlEntregadores = "";
 
-        const q = document.querySelectorAll('.e-qtd');
-        const m = document.querySelectorAll('.e-maq');
-        const d = document.querySelectorAll('.e-din');
-        const g = document.querySelectorAll('.e-gas');
+        const inputsQtd = document.querySelectorAll('.e-qtd');
+        const inputsMaq = document.querySelectorAll('.e-maq');
+        const inputsDin = document.querySelectorAll('.e-din');
+        const inputsGas = document.querySelectorAll('.e-gas');
 
         entregadores.forEach((nome, i) => {
-            const qtd = Number(q[i].value);
-            const vM = Number(m[i].value);
-            const vD = Number(d[i].value);
-            const vGas = Number(g[i].value);
-            const totalInd = vM + vD + vGas;
+            const qtd = Number(inputsQtd[i].value) || 0;
+            const vMaq = Number(inputsMaq[i].value) || 0;
+            const vDin = Number(inputsDin[i].value) || 0;
+            const vGas = Number(inputsGas[i].value) || 0;
+            const totalInd = vMaq + vDin + vGas;
             
             totalEntregas += qtd;
-            totalMaqEnt += vM;
-            totalDinEnt += vD;
+            totalMaqEnt += vMaq;
+            totalDinEnt += vDin;
             totalGasEnt += vGas;
+            
             htmlEntregadores += `
-                <li style="margin-bottom: 8px; list-style: none; padding: 8px; border-bottom: 1px dashed #bbb;">
+                <li class="item-motoboy">
                     <strong>🙋${nome}</strong> <br> 🛵 ${qtd} entregas <br>
-                    <span>💳 Maquininha: R$ ${vM.toFixed(2)}</span> | <span>💵 Dinheiro: R$ ${vD.toFixed(2)}</span> | <span>⛽ Gasolina: R$ ${vGas.toFixed(2)}</span><br>
+                    <span>💳 Maquininha: R$ ${vMaq.toFixed(2)}</span> | <span>💵 Dinheiro: R$ ${vDin.toFixed(2)}</span> | <span>⛽ Gasolina: R$ ${vGas.toFixed(2)}</span><br>
                     <span>💰 <strong>Total: R$ ${totalInd.toFixed(2)}</strong></span>
                 </li>`;
         });
 
-        // Adiciona o valor gasto com gasolina como se fosse recebido, para bater o fechamento.
         const realDeliv = maqRetirada + totalMaqEnt + totalDinEnt + totalGasEnt;
         const difDeliv = realDeliv - sistDeliv;
 
