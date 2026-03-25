@@ -27,6 +27,7 @@
         margin: 0;
         padding: 20px;
         min-height: 100vh;
+        box-sizing: border-box; /* Faz o padding caber dentro dos 100vh sem gerar rolagem extra */
         display: flex;
         flex-direction: column;
         color: var(--text-color);
@@ -228,6 +229,26 @@
         to { opacity: 1; transform: translateY(0); }
     }
     .anima-fade { animation: slideUpFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; will-change: transform, opacity; }
+
+    /* --- RESPONSIVIDADE (MOBILE) --- */
+    @media (max-width: 768px) {
+        body {
+            padding: 10px; /* Reduz o espaçamento externo no celular para ganhar espaço */
+        }
+        .container {
+            padding: 15px;
+        }
+        .grid-setores {
+            grid-template-columns: 1fr; /* Coloca Salão e Delivery um embaixo do outro */
+            gap: 15px;
+        }
+        .grid-motoboy-inputs {
+            grid-template-columns: 1fr 1fr; /* Transforma os 4 campos do motoboy em 2 linhas de 2 colunas */
+        }
+        .btn-final {
+            font-size: 16px;
+        }
+    }
 </style>
 </head>
 <body>
