@@ -3,44 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fechamento Analítico - Brenão</title>
+    <title>Fechamento Analítico - Big Pizza & Burguer</title>
     <style>
-        :root { --salao: #2980b9; --delivery: #d35400; --bg: #f5f6fa; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .grid-setores { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px; }
-        .card { padding: 20px; border-radius: 10px; border: 1px solid #eee; }
-        .card-salao { border-top: 5px solid var(--salao); background: #f0f7ff; }
-        .card-delivery { border-top: 5px solid var(--delivery); background: #fff5f0; }
-        h2 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
-        h3 { margin-top: 0; display: flex; justify-content: space-between; }
-        .input-group { margin-bottom: 12px; }
-        label { font-size: 13px; font-weight: bold; color: #555; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .btn { cursor: pointer; border: none; border-radius: 6px; font-weight: bold; transition: 0.3s; }
-        .btn-setup { background: #34495e; color: white; padding: 10px 20px; margin-top: 10px; }
-        .btn-final { background: #27ae60; color: white; padding: 18px; width: 100%; font-size: 18px; margin-top: 30px; }
-        #resultado { margin-top: 30px; display: none; padding: 25px; border-radius: 10px; }
-        .dif-positiva { border-left: 10px solid #27ae60; background: #e8f5e9; }
-        .dif-negativa { border-left: 10px solid #c0392b; background: #ffebee; }
-        .badge-entrega { background: var(--delivery); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
-    </style>
+    :root { 
+        --salao: #2980b9; 
+        --delivery: #d35400; 
+        --success: #27ae60;
+        --danger: #c0392b;
+        /* Película escura sutil sobre o fundo para dar contraste */
+        --bg-overlay: rgba(0, 0, 0, 0.5); 
+        /* Cor de fundo dos cards (branca bem transparente) */
+        --card-bg: rgba(255, 255, 255, 0.15);
+        /* Cor do texto (branca para contrastar com o fundo escuro) */
+        --text-color: #fff;
+    }
+
+    body { 
+        font-family: 'Segoe UI', sans-serif; 
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        color: var(--text-color);
+        
+        /* CONFIGURAÇÃO DO FUNDO */
+        /* 1. Cor sólida de segurança (caso a imagem não carregue) */
+        background-color: #2c3e50; 
+        /* 2. Película + Imagem (Ajuste o caminho se necessário) */
+        background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('img/background.jpg'); 
+        background-size: cover;
+        background-attachment: fixed;
+        background-position: center;
+    }
+
+    .container { 
+        max-width: 1000px; 
+        margin: auto; 
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.5s ease;
+        
+        /* EFEITO DE VIDRO FOSCO NO CONTAINER PRINCIPAL */
+        background: var(--card-bg);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    /* Ajuste para centralizar o menu de setup */
+    .centering-setup {
+        margin-top: 15vh;
+        align-items: center;
+        /* Remove o fundo do container pai quando estiver centralizado para não duplicar o blur */
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    .card { 
+        padding: 25px; 
+        border-radius: 15px; 
+        background: rgba(255, 255, 255, 0.1); /* Mais transparente que o container */
+        backdrop-filter: blur(5px); /* Blur menor interno */
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Mantém o fundo do setup visível quando centralizado */
+    #setup.card {
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        max-width: 500px;
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        text-align: center;
+    }
+
+    .grid-setores { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 25px; 
+        margin-top: 20px; 
+    }
+
+    /* Cores das bordas superiores dos cards */
+    .card-salao { border-top: 6px solid var(--salao); }
+    .card-delivery { border-top: 6px solid var(--delivery); }
+
+    h2 { text-align: center; color: var(--text-color); margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    h3 { margin-top: 0; display: flex; justify-content: space-between; color: var(--text-color); }
+    h4 { color: var(--text-color); }
+
+    .input-group { margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: bold; color: #ddd; display: block; margin-bottom: 5px; }
+    
+    /* Estilo dos Inputs para combinar com o tema escuro */
+    input { 
+        width: 100%; 
+        padding: 12px; 
+        border: 1px solid rgba(255, 255, 255, 0.3); 
+        border-radius: 8px; 
+        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--text-color);
+    }
+    input:focus {
+        outline: none;
+        border-color: var(--salao);
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .btn { 
+        cursor: pointer; 
+        border: none; 
+        border-radius: 8px; 
+        font-weight: bold; 
+        transition: 0.3s; 
+    }
+
+    .btn-setup { 
+        background: #34495e; 
+        color: white; 
+        padding: 12px 25px; 
+        margin-top: 15px; 
+    }
+
+    .btn-setup:hover { 
+        background: rgba(52, 73, 94, 0.7); 
+    }
+
+    .btn-final { 
+        background: var(--success); 
+        color: white; 
+        padding: 20px; 
+        width: 100%; 
+        font-size: 18px; 
+        margin-top: 30px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn-final:hover { background: #219150; opacity: 0.9; }
+
+    #resultado { 
+        margin-top: 30px; 
+        display: none; 
+        padding: 25px; 
+        border-radius: 15px; 
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Cores do resultado com fundo translúcido */
+    .dif-positiva { 
+        border-left: 10px solid var(--success); 
+        background: rgba(0, 83, 6, 0.4); /* Verde escuro translúcido */
+        color: #e8f5e9;
+    }
+    .dif-negativa { 
+        border-left: 10px solid var(--danger); 
+        background: rgba(183, 28, 28, 0.8); /* Vermelho escuro translúcido */
+        color: #ffebee;
+    }
+    
+    .badge-entrega { background: var(--delivery); color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+    
+    /* Ajuste de cor para textos dentro dos acertos dos motoboys */
+    #listaEntregadoresDinamica label { color: #eee; }
+    #listaEntregadoresDinamica div { color: var(--text-color); }
+    hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 20px 0; }
+</style>
 </head>
 <body>
 
-<div class="container">
+<div class="container centering-setup" id="mainContainer">
     <h2>📊 Fechamento de Caixa Analítico</h2>
 
-    <div id="setup" class="card" style="margin-bottom: 20px;">
-        <label>Quantos entregadores trabalharam?</label>
-        <div style="display:flex; gap:10px;">
-            <input type="number" id="qtdEntregadores" placeholder="Ex: 3">
+    <div id="setup" class="card">
+        <label>Quantos entregadores trabalharam hoje?</label>
+        <div style="display:flex; flex-direction: column; gap:10px; align-items: center;">
+            <input type="number" id="qtdEntregadores" placeholder="Ex: 3" style="text-align: center; max-width: 150px;">
             <button class="btn btn-setup" onclick="configurarEntregadores()">Definir Equipe</button>
         </div>
         <div id="nomesArea"></div>
     </div>
 
-    <div id="formularioPrincipal" style="display:none;">
+    <div id="formularioPrincipal" style="display:none; width: 100%;">
         <div class="grid-setores">
             <div class="card card-salao">
                 <h3>🍽️ SALÃO</h3>
@@ -62,33 +220,31 @@
                     <input type="number" id="dinSalao" step="0.01">
                 </div>
                 <div class="input-group">
-                    <label>🍔 Excedente de Lanches (Pago por funcionários):</label>
-                    <input type="number" id="excedenteLanche" step="0.01" placeholder="R$ 0,00">
+                    <label>🍔 Excedente de Lanches (Funcionários):</label>
+                    <input type="number" id="excedenteLanche" step="0.01" placeholder="0.00">
                 </div>
             </div>
 
             <div class="card card-delivery">
                 <h3>🛵 DELIVERY / RETIRADA</h3>
                 <div class="input-group">
-                    <label>Vendas totais no Web Cardápio (Delivery e Retirada):</label>
-                    <input type="number" id="vendaWebDeliv" step="0.01" placeholder="0.00">
+                    <label>Web Cardápio (Delivery/Retirada):</label>
+                    <input type="number" id="vendaWebDeliv" step="0.01">
                 </div>
                 <div class="input-group">
-                    <label>Vendas totais no Bundi (Delivery):</label>
-
-                    <input type="number" id="vendaBundiDeliv" step="0.01" placeholder="0.00">
+                    <label>App Bundi (Delivery):</label>
+                    <input type="number" id="vendaBundiDeliv" step="0.01">
                 </div>
                 <hr>
                 <div class="input-group">
                     <label>Maquininha Retirada (Balcão):</label>
                     <input type="number" id="maqRetirada" step="0.01">
                 </div>
-                <div id="listaEntregadoresDinamica">
-                    </div>
+                <div id="listaEntregadoresDinamica"></div>
             </div>
         </div>
 
-        <button class="btn btn-final" onclick="gerarRelatorio()">CALCULAR FECHAMENTO SEPARADO</button>
+        <button class="btn btn-final" onclick="gerarRelatorio()">CALCULAR FECHAMENTO</button>
     </div>
 
     <div id="resultado"></div>
@@ -99,12 +255,15 @@
 
     function configurarEntregadores() {
         const qtd = document.getElementById('qtdEntregadores').value;
+        if(!qtd || qtd <= 0) return alert("Insira a quantidade de entregadores.");
+        
         const area = document.getElementById('nomesArea');
         area.innerHTML = '<br><label>Nomes dos Entregadores:</label>';
         for(let i=0; i<qtd; i++) {
-            area.innerHTML += `<input type="text" class="nome-ent" placeholder="Nome ${i+1}" style="margin-bottom:5px;">`;
+            area.innerHTML += `<input type="text" class="nome-ent" placeholder="Nome ${i+1}" style="margin-bottom:8px;">`;
         }
-        area.innerHTML += `<br><button class="btn btn-setup" onclick="confirmarNomes()">Confirmar e Abrir Caixa</button>`;
+        // Botão na parte de baixo como solicitado
+        area.innerHTML += `<br><button class="btn btn-setup" style="background:#e67e22" onclick="confirmarNomes()">Confirmar e Abrir Caixa</button>`;
     }
 
     function confirmarNomes() {
@@ -116,16 +275,18 @@
         
         entregadores.forEach((nome, index) => {
             areaDinamica.innerHTML += `
-                <div style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; border: 1px solid #ddd;">
-                    <span class="badge-entrega">${nome}</span>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:5px; margin-top:5px;">
-                        <input type="number" class="e-qtd" placeholder="Entregas" data-idx="${index}">
-                        <input type="number" class="e-maq" placeholder="Máquina" data-idx="${index}">
-                        <input type="number" class="e-din" placeholder="Dinheiro" data-idx="${index}">
+                <div style="background:rgba(255,255,255,0.8); padding:12px; border-radius:10px; margin-bottom:12px; border: 1px solid #ddd;">
+                    <span class="badge-entrega">🛵 ${nome}</span>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:8px;">
+                        <div><label style="font-size:10px">Qtd</label><input type="number" class="e-qtd" placeholder="0"></div>
+                        <div><label style="font-size:10px">💳 Maq</label><input type="number" class="e-maq" placeholder="0.00"></div>
+                        <div><label style="font-size:10px">💵 Din</label><input type="number" class="e-din" placeholder="0.00"></div>
                     </div>
                 </div>`;
         });
         
+        // Remove a centralização ao mostrar o formulário completo
+        document.getElementById('mainContainer').classList.remove('centering-setup');
         document.getElementById('formularioPrincipal').style.display = 'block';
         document.getElementById('setup').style.display = 'none';
     }
@@ -133,22 +294,20 @@
     function gerarRelatorio() {
         // --- CÁLCULO SALÃO ---
         const sistSalao = Number(document.getElementById('vendaSistSalao').value);
-        const excedente = Number(document.getElementById('excedenteLanche').value); // Novo campo
+        const excedente = Number(document.getElementById('excedenteLanche').value);
         const inicial = Number(document.getElementById('caixaInicial').value);
-    
-        // O valor real que você tem fisicamente (Dinheiro + Cartão do Salão)
+        
+        // Dinheiro + Maquininha - Fundo de Caixa Inicial
         const realSalao = (Number(document.getElementById('dinSalao').value) - inicial) + Number(document.getElementById('maqSalao').value);
-
-        // Diferença: Real - (Vendas Mesas + Dinheiro dos Lanches)
-        const difSalao = realSalao - (sistSalao + excedente);
+        
+        // Lógica: Subtraímos o excedente do real para ver se as vendas do App batem
+        const difSalao = (realSalao - excedente) - sistSalao;
 
         // --- CÁLCULO DELIVERY ---
         const sistDeliv = Number(document.getElementById('vendaWebDeliv').value) + Number(document.getElementById('vendaBundiDeliv').value);
         const maqRetirada = Number(document.getElementById('maqRetirada').value);
         
-        let totalMaqEnt = 0;
-        let totalDinEnt = 0;
-        let totalEntregas = 0;
+        let totalMaqEnt = 0, totalDinEnt = 0, totalEntregas = 0;
         let htmlEntregadores = "";
 
         const q = document.querySelectorAll('.e-qtd');
@@ -157,59 +316,56 @@
 
         entregadores.forEach((nome, i) => {
             const qtd = Number(q[i].value);
-            const vM = Number(m[i].value); // Valor Maquininha
-            const vD = Number(d[i].value); // Valor Dinheiro
-            const totalIndividual = vM + vD;
+            const vM = Number(m[i].value);
+            const vD = Number(d[i].value);
+            const totalInd = vM + vD;
             
             totalEntregas += qtd;
             totalMaqEnt += vM;
             totalDinEnt += vD;
-
-            // Novo layout detalhado com emojis por entregador
             htmlEntregadores += `
-                <li style="margin-bottom: 8px; list-style: none; padding: 5px; border-bottom: 1px dashed #ccc;">
+                <li style="margin-bottom: 8px; list-style: none; padding: 8px; border-bottom: 1px dashed #bbb;">
                     <strong>🛵 ${nome}:</strong> ${qtd} entregas <br>
-                    <span>&nbsp;&nbsp;💳 Cartão: R$ ${vM.toFixed(2)}</span> | 
-                    <span>💵 Dinheiro: R$ ${vD.toFixed(2)}</span> <br>
-                    <span>&nbsp;&nbsp;💰 <strong>Total: R$ ${totalIndividual.toFixed(2)}</strong></span>
+                    <span>💳 Maquininha: R$ ${vM.toFixed(2)}</span> | <span>💵 Dinheiro: R$ ${vD.toFixed(2)}</span><br>
+                    <span>💰 <strong>Total: R$ ${totalInd.toFixed(2)}</strong></span>
                 </li>`;
         });
 
         const realDeliv = maqRetirada + totalMaqEnt + totalDinEnt;
         const difDeliv = realDeliv - sistDeliv;
 
-        // --- ATUALIZAÇÃO DO LAYOUT DO RELATÓRIO ---
+        // --- EXIBIÇÃO ---
         const resDiv = document.getElementById('resultado');
         resDiv.style.display = 'block';
         resDiv.className = (Math.abs(difSalao + difDeliv) < 1) ? 'dif-positiva' : 'dif-negativa';
 
         resDiv.innerHTML = `
-            <h3 style="text-align: center;">📋 Relatório de Diferenças Setoriais</h3>
+            <h3 style="text-align: center;">📋 RESULTADO DO FECHAMENTO</h3>
             <div class="grid-setores">
-                <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px;">
-                    <h4 style="color:var(--salao); margin-top:0;">🍽️ Setor Salão</h4>
-                    <p>📉 Vendas (Esperado): R$ ${sistSalao.toFixed(2)}</p>
-                    <p>🍔 Excedente Lanches: R$ ${excedente.toFixed(2)}</p>
-                    <p>✅ Real em Mãos: R$ ${realSalao.toFixed(2)}</p>
-                    <p><strong>⚖️ Diferença: R$ ${difSalao.toFixed(2)}</strong></p>
+                <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 10px;">
+                    <h4 style="color:var(--salao); margin-top:0;">🍽️ SALÃO</h4>
+                    <p>App: R$ ${sistSalao.toFixed(2)}</p>
+                    <p>🍔 Excedente: - R$ ${excedente.toFixed(2)}</p>
+                    <p><strong>Diferença: R$ ${difSalao.toFixed(2)}</strong></p>
                 </div>
-            
-                <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px;">
-                    <h4 style="color:var(--delivery); margin-top:0;">🛵 Setor Delivery</h4>
-                    <p>📉 Vendas (Esperado): R$ ${sistDeliv.toFixed(2)}</p>
-                    <p>✅ Real em Mãos: R$ ${realDeliv.toFixed(2)}</p>
-                    <p><strong>⚖️ Diferença: R$ ${difDeliv.toFixed(2)}</strong></p>
+                <div style="background: rgba(255,255,255,0.6); padding: 15px; border-radius: 10px;">
+                    <h4 style="color:var(--delivery); margin-top:0;">🛵 DELIVERY</h4>
+                    <p>Apps: R$ ${sistDeliv.toFixed(2)}</p>
+                    <p>Real: R$ ${realDeliv.toFixed(2)}</p>
+                    <p><strong>Diferença: R$ ${difDeliv.toFixed(2)}</strong></p>
                 </div>
             </div>
             <hr>
-            <h4>📦 Detalhamento dos Entregadores (${totalEntregas} total):</h4>
+            <h4>📦 Acertos Motoboys (${totalEntregas} total):</h4>
             <ul style="padding-left: 0;">${htmlEntregadores}</ul>
             <hr>
             <div style="text-align: center;">
                 <h2 style="margin:10px 0">💵 Diferença Total: R$ ${(difSalao + difDeliv).toFixed(2)}</h2>
-                <p>${Math.abs(difSalao + difDeliv) < 1 ? "✅ Tudo certo! O caixa bateu." : "⚠️ Atenção! Existe uma divergência no valor final."}</p>
+                <p>${Math.abs(difSalao + difDeliv) < 1 ? "✅ Caixa Fechado!" : "⚠️ Verifique as divergências."}</p>
             </div>
         `;
+        
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 </script>
 
