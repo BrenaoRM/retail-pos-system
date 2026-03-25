@@ -277,10 +277,11 @@
             areaDinamica.innerHTML += `
                 <div style="background:rgba(0, 0, 0, 0.4); padding:12px; border-radius:10px; margin-bottom:12px; border: 1px solid rgba(255, 255, 255, 0.5);">
                     <span class="badge-entrega">🙋 ${nome}</span>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:8px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:8px; margin-top:8px;">
                         <div><label style="font-size:10px">🛵 Entregas</label><input type="number" class="e-qtd" placeholder="0"></div>
                         <div><label style="font-size:10px">💳 Maquininha</label><input type="number" class="e-maq" placeholder="0.00"></div>
                         <div><label style="font-size:10px">💵 Dinheiro</label><input type="number" class="e-din" placeholder="0.00"></div>
+                        <div><label style="font-size:10px">⛽ Gasolina</label><input type="number" class="e-gas" placeholder="0.00"></div>
                     </div>
                 </div>`;
         });
@@ -307,31 +308,35 @@
         const sistDeliv = Number(document.getElementById('vendaWebDeliv').value) + Number(document.getElementById('vendaBundiDeliv').value);
         const maqRetirada = Number(document.getElementById('maqRetirada').value);
         
-        let totalMaqEnt = 0, totalDinEnt = 0, totalEntregas = 0;
+        let totalMaqEnt = 0, totalDinEnt = 0, totalEntregas = 0, totalGasEnt = 0;
         let htmlEntregadores = "";
 
         const q = document.querySelectorAll('.e-qtd');
         const m = document.querySelectorAll('.e-maq');
         const d = document.querySelectorAll('.e-din');
+        const g = document.querySelectorAll('.e-gas');
 
         entregadores.forEach((nome, i) => {
             const qtd = Number(q[i].value);
             const vM = Number(m[i].value);
             const vD = Number(d[i].value);
-            const totalInd = vM + vD;
+            const vGas = Number(g[i].value);
+            const totalInd = vM + vD + vGas;
             
             totalEntregas += qtd;
             totalMaqEnt += vM;
             totalDinEnt += vD;
+            totalGasEnt += vGas;
             htmlEntregadores += `
                 <li style="margin-bottom: 8px; list-style: none; padding: 8px; border-bottom: 1px dashed #bbb;">
                     <strong>🙋${nome}</strong> <br> 🛵 ${qtd} entregas <br>
-                    <span>💳 Maquininha: R$ ${vM.toFixed(2)}</span> | <span>💵 Dinheiro: R$ ${vD.toFixed(2)}</span><br>
+                    <span>💳 Maquininha: R$ ${vM.toFixed(2)}</span> | <span>💵 Dinheiro: R$ ${vD.toFixed(2)}</span> | <span>⛽ Gasolina: R$ ${vGas.toFixed(2)}</span><br>
                     <span>💰 <strong>Total: R$ ${totalInd.toFixed(2)}</strong></span>
                 </li>`;
         });
 
-        const realDeliv = maqRetirada + totalMaqEnt + totalDinEnt;
+        // Adiciona o valor gasto com gasolina como se fosse recebido, para bater o fechamento.
+        const realDeliv = maqRetirada + totalMaqEnt + totalDinEnt + totalGasEnt;
         const difDeliv = realDeliv - sistDeliv;
 
         // --- EXIBIÇÃO ---
@@ -353,7 +358,8 @@
                 <div style="background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px;">
                     <h4 style="color:var(--delivery); margin-top:0;">🛵 DELIVERY</h4>
                     <p>Vendas (Esperado): R$ ${sistDeliv.toFixed(2)}</p>
-                    <p>Real (Recebido): R$ ${realDeliv.toFixed(2)}</p>
+                    <p>Real (Recebido): R$ ${(maqRetirada + totalMaqEnt + totalDinEnt).toFixed(2)}</p>
+                    <p>⛽ Gasto Combustível: + R$ ${totalGasEnt.toFixed(2)}</p>
                     <hr>
                     <p><strong>Diferença: R$ ${difDeliv.toFixed(2)}</strong></p>
                 </div>
