@@ -1,119 +1,262 @@
-/* Fechamento.css */
-
 :root { 
-    --salao: #2980b9; 
-    --delivery: #d35400; 
-    --success: #27ae60;
-    --danger: #c0392b;
-    --bg-overlay: rgba(0, 0, 0, 0.7); 
-    --card-bg: rgba(0, 0, 0, 0.4);
-    --text-color: #fff;
+        --salao: #2980b9; 
+        --delivery: #d35400; 
+        --success: #27ae60;
+        --danger: #c0392b;
+        /* Película escura sutil sobre o fundo para dar contraste */
+        --bg-overlay: rgba(0, 0, 0, 0.7); 
+        /* Cor de fundo dos cards (branca bem transparente) */
+        --card-bg: rgba(0, 0, 0, 0.4);
+        /* Cor do texto (branca para contrastar com o fundo escuro) */
+        --text-color: #fff;
+    }
+
+    html {
+        scroll-behavior: smooth; /* Deixa a rolagem nativa da página mais suave */
+        background-color: #2c3e50; /* Previne fundos brancos caso a tela estique ou sofra 'bounce' no celular */
+    }
+
+    body { 
+        font-family: 'Segoe UI', sans-serif; 
+        margin: 0;
+        padding: 20px;
+        min-height: 100vh;
+        box-sizing: border-box; /* Faz o padding caber dentro dos 100vh sem gerar rolagem extra */
+        display: flex;
+        flex-direction: column;
+        color: var(--text-color);
+    }
+
+    /* TRUQUE DE PERFORMANCE: Fundo fixo em uma camada isolada (GPU) */
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background-color: #2c3e50; 
+        background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), url('../../../public/img/background.jpg'); 
+        background-size: cover;
+        background-position: top center; /* Ancora a imagem no topo, evitando que ela "pule" quando a barra do navegador some */
+        transform: translateZ(0); /* Força a aceleração na placa de vídeo (GPU) sem soltar a imagem no celular */
+    }
+
+    .container { 
+        max-width: 1000px; 
+        margin: 0 auto; 
+        width: 100%;
+        display: flex;
+        contain: layout style paint; /* Isola a renderização do container */
+        flex-direction: column;
+        transition: background 0.5s ease, border 0.5s ease, box-shadow 0.5s ease;
+        
+        /* FUNDO ESCURO COM BLUR */
+        background: var(--card-bg);
+
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1); /* Borda bem fina e escura */
+        padding: 20px;
+        box-sizing: border-box; /* Evita que o site fique mais largo que a tela, removendo o espaço em branco lateral */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* O fundo agora é aplicado ao container principal ou ao body */
-.container { 
-    max-width: 1000px; 
-    margin: 20px auto; 
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    background: var(--card-bg);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    box-sizing: border-box;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    color: var(--text-color);
-    font-family: 'Segoe UI', sans-serif;
+    /* Ajuste para centralizar o menu de setup */
+    .centering-setup {
+        margin-top: 5vh;
+        align-items: center;
+        background: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    .card { 
+        padding: 25px; 
+        border-radius: 15px; 
+        background: rgba(0, 0, 0, 0.5); /* Garante que o fundo seja preto translúcido */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        box-sizing: border-box;
 }
+    #setup.card {
+        background: rgba(0, 0, 0, 0.5);
+        max-width: 500px;
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        text-align: center;
+    }
 
-.card { 
-    padding: 25px; 
-    border-radius: 15px; 
-    background: rgba(0, 0, 0, 0.5); 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-}
+    .grid-setores { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 25px; 
+        margin-top: 20px; 
+    }
 
-.setup-card {
-    max-width: 500px;
-    margin: 5vh auto;
-    text-align: center;
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-}
+    /* Cores das bordas superiores dos cards */
+    .card-salao { border-top: 6px solid var(--salao); }
+    .card-delivery { border-top: 6px solid var(--delivery); }
 
-.grid-setores { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 25px; 
-}
+    h2 { text-align: center; color: var(--text-color); margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    h3 { margin-top: 0; display: flex; justify-content: space-between; color: var(--text-color); }
+    h4 { color: var(--text-color); }
 
-.card-salao { border-top: 6px solid var(--salao); }
-.card-delivery { border-top: 6px solid var(--delivery); }
+    .input-group { margin-bottom: 12px; }
+    label { font-size: 13px; font-weight: bold; color: #ddd; display: block; margin-bottom: 5px; }
+    
+    /* Estilo dos Inputs para combinar com o tema escuro */
+    input { 
+        width: 100%; 
+        padding: 12px; 
+        border: 1px solid rgba(255, 255, 255, 0.3); 
+        border-radius: 8px; 
+        box-sizing: border-box;
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--text-color);
+        transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    }
+    input:focus {
+        outline: none;
+        border-color: var(--salao);
+        background: rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 8px rgba(41, 128, 185, 0.4); /* Brilho azulado suave ao focar */
+    }
 
-h3 { display: flex; justify-content: space-between; margin-top: 0; }
+    /* Remove as setinhas dos inputs do tipo number */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+    }
+    input[type=number] {
+        -moz-appearance: textfield; /* Para o Firefox antigo */
+        appearance: textfield; /* Padrão oficial (Remove o aviso amarelo) */
+    }
 
-input { 
-    width: 100%; 
-    padding: 12px; 
-    margin: 8px 0;
-    border: 1px solid rgba(255, 255, 255, 0.3); 
-    border-radius: 8px; 
-    background: rgba(0, 0, 0, 0.3);
-    color: white;
-    font-size: 16px; /* Evita zoom no iOS */
-}
+    .btn { 
+        cursor: pointer; 
+        border: none; 
+        border-radius: 8px; 
+        font-weight: bold; 
+        transition: 0.3s; 
+    }
 
-.btn { 
-    cursor: pointer; 
-    border: none; 
-    border-radius: 8px; 
-    font-weight: bold; 
-    padding: 12px 25px;
-    transition: 0.3s; 
-}
+    .btn-setup { 
+        background: #34495e; 
+        color: white; 
+        padding: 12px 25px; 
+        margin-top: 15px; 
+    }
 
-.btn-setup { background: #34495e; color: white; width: 100%; }
-.btn-confirm { background: #e67e22; color: white; width: 100%; }
-.btn-final { 
-    background: var(--success); 
-    color: white; 
-    padding: 20px; 
-    width: 100%; 
-    font-size: 18px;
-    grid-column: span 2; /* Ocupa as duas colunas no desktop */
-}
+    .btn-setup:hover { 
+        background: rgba(52, 73, 94, 0.7); 
+    }
 
-.card-motoboy { 
-    background: rgba(0, 0, 0, 0.4); 
-    padding: 12px; 
-    border-radius: 10px; 
-    margin-bottom: 12px; 
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-}
+    .btn-final { 
+        background: var(--success); 
+        color: white; 
+        padding: 20px; 
+        width: 100%; 
+        font-size: 18px; 
+        margin-top: 30px; 
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
 
-.grid-motoboy-inputs { 
-    display: grid; 
-    grid-template-columns: repeat(4, 1fr); 
-    gap: 8px; 
-    margin-top: 8px; 
-}
+    .btn-final:hover { background: #219150; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+    .btn-final:active { transform: translateY(1px); box-shadow: 0 2px 10px rgba(0,0,0,0.3); } /* Efeito de clique afundando */
 
-/* Animação suave */
-.anima-fade { 
-    animation: slideUpFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; 
-}
+    #resultado { 
+        margin-top: 30px; 
+        display: none; 
+        padding: 25px; 
+        border-radius: 15px; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
 
-@keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+    /* Cores do resultado com fundo translúcido */
+    .dif-positiva { 
+        border-left: 10px solid var(--success); 
+        background: rgba(0, 83, 6, 0.4); /* Verde escuro translúcido */
+        color: #e8f5e9;
+    }
+    .dif-negativa { 
+        border-left: 10px solid var(--danger); 
+        background: rgba(183, 28, 28, 0.4); /* Vermelho escuro translúcido */
+        color: #ffebee;
+    }
+    
+    .badge-entrega { color: var(--delivery); font-size: 15px; font-weight: bold; }
+    
+    /* Ajuste de cor para textos dentro dos acertos dos motoboys */
+    #listaEntregadoresDinamica label { color: #eee; }
+    #listaEntregadoresDinamica div { color: var(--text-color); }
+    hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.2); margin: 20px 0; }
+    
+    /* --- CLASSES UTILITÁRIAS (REFATORAÇÃO) --- */
+    .flex-col-center { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .input-qtd-setup { text-align: center; max-width: 150px; }
+    .input-nome { margin-bottom: 8px; }
+    .btn-confirm { background: #e67e22; }
+    .btn-confirm:hover { background: #d35400; }
+    
+    .card-motoboy { background: rgba(0, 0, 0, 0.4); padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255, 255, 255, 0.5); }
+    .grid-motoboy-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .lbl-micro { font-size: 10px; }
+    
+    .card-resultado { background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 10px; }
+    .tit-salao { color: var(--salao); margin-top: 0; text-align: center; }
+    .tit-delivery { color: var(--delivery); margin-top: 0; text-align: center; }
+    
+    .lista-motoboys { padding-left: 0; }
+    .item-motoboy { margin-bottom: 8px; list-style: none; padding: 8px; border-bottom: 1px dashed #bbb; }
+    .item-motoboy:last-child { border-bottom: none; margin-bottom: 0; }
+    
+    .res-final { text-align: center; }
+    .res-final h2 { margin: 10px 0; }
+    .titulo-relatorio { text-align: center; }
 
-/* Responsividade */
-@media (max-width: 768px) {
-    .grid-setores { grid-template-columns: 1fr; }
-    .grid-motoboy-inputs { grid-template-columns: 1fr 1fr; }
-    .btn-final { grid-column: span 1; }
-}
+    /* --- ANIMAÇÕES PARA FLUIDEZ --- */
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .anima-fade { animation: slideUpFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; will-change: transform, opacity; }
+
+    /* --- RESPONSIVIDADE (MOBILE) --- */
+    @media (max-width: 768px) {
+        body {
+            padding: 10px 5px; /* Reduz ainda mais o espaçamento inútil nas bordas */
+        }
+        .container {
+            padding: 15px 10px;
+        }
+        .card { 
+            padding: 15px; /* Devolve espaço vital para os inputs não ficarem espremidos */
+        }
+        .centering-setup {
+            margin-top: 2vh; /* Evita que o teclado do celular cubra a tela inicial */
+        }
+        .grid-setores {
+            grid-template-columns: 1fr; /* Coloca Salão e Delivery um embaixo do outro */
+            gap: 15px;
+        }
+        .grid-motoboy-inputs {
+            grid-template-columns: 1fr 1fr; /* Transforma os 4 campos do motoboy em 2 linhas de 2 colunas */
+            gap: 12px; /* Espaço maior para não clicar no campo errado com o dedo (Touch Target) */
+        }
+        h2 { font-size: 20px; margin-bottom: 20px; }
+        input { 
+            font-size: 16px !important; /* TRUQUE DE OURO: Evita o zoom automático insuportável do iOS (iPhone) */
+        }
+        .btn-final {
+            font-size: 16px;
+            padding: 15px;
+        }
+        .lbl-micro {
+            font-size: 12px; /* Deixa as etiquetas dos motoboys mais fáceis de ler */
+        }
+    }

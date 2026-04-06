@@ -1,2 +1,0 @@
-npm install react-router-dom lucide-react axios
-npm install express prisma @prisma/client cors dotenv jsonwebtoken bcrypt
