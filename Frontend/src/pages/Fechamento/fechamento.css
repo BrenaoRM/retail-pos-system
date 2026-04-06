@@ -1,0 +1,119 @@
+/* Fechamento.css */
+
+:root { 
+    --salao: #2980b9; 
+    --delivery: #d35400; 
+    --success: #27ae60;
+    --danger: #c0392b;
+    --bg-overlay: rgba(0, 0, 0, 0.7); 
+    --card-bg: rgba(0, 0, 0, 0.4);
+    --text-color: #fff;
+}
+
+/* O fundo agora é aplicado ao container principal ou ao body */
+.container { 
+    max-width: 1000px; 
+    margin: 20px auto; 
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.card { 
+    padding: 25px; 
+    border-radius: 15px; 
+    background: rgba(0, 0, 0, 0.5); 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}
+
+.setup-card {
+    max-width: 500px;
+    margin: 5vh auto;
+    text-align: center;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.grid-setores { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 25px; 
+}
+
+.card-salao { border-top: 6px solid var(--salao); }
+.card-delivery { border-top: 6px solid var(--delivery); }
+
+h3 { display: flex; justify-content: space-between; margin-top: 0; }
+
+input { 
+    width: 100%; 
+    padding: 12px; 
+    margin: 8px 0;
+    border: 1px solid rgba(255, 255, 255, 0.3); 
+    border-radius: 8px; 
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 16px; /* Evita zoom no iOS */
+}
+
+.btn { 
+    cursor: pointer; 
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    padding: 12px 25px;
+    transition: 0.3s; 
+}
+
+.btn-setup { background: #34495e; color: white; width: 100%; }
+.btn-confirm { background: #e67e22; color: white; width: 100%; }
+.btn-final { 
+    background: var(--success); 
+    color: white; 
+    padding: 20px; 
+    width: 100%; 
+    font-size: 18px;
+    grid-column: span 2; /* Ocupa as duas colunas no desktop */
+}
+
+.card-motoboy { 
+    background: rgba(0, 0, 0, 0.4); 
+    padding: 12px; 
+    border-radius: 10px; 
+    margin-bottom: 12px; 
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+}
+
+.grid-motoboy-inputs { 
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 8px; 
+    margin-top: 8px; 
+}
+
+/* Animação suave */
+.anima-fade { 
+    animation: slideUpFade 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; 
+}
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .grid-setores { grid-template-columns: 1fr; }
+    .grid-motoboy-inputs { grid-template-columns: 1fr 1fr; }
+    .btn-final { grid-column: span 1; }
+}
