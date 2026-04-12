@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import "./fechamento.css";
+import logo from '/img/logo.png';
 
 // ── Ícones SVG inline leves ──────────────────────────────────────────
 const IconUsers = () => (
@@ -162,7 +163,7 @@ const Fechamento = () => {
     <div className="fc-root">
       {/* Header */}
       <header className="fc-header">
-        <img src="/img/logo.png" alt="Logo" className="fc-logo" />
+        <img src={logo} alt="Logo" className="fc-logo" />
         {etapa !== 'setup' && <Stepper etapa={etapa} />}
       </header>
 
