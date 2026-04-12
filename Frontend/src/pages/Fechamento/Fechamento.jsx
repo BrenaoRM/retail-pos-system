@@ -426,7 +426,10 @@ const Fechamento = () => {
               </div>
             </div>
 
-            <div style={{ textAlign: 'center', marginTop: 24 }}>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24 }}>
+              <button className="btn btn-ghost btn-icon" onClick={() => setEtapa('formulario')}>
+                ← Voltar e editar
+              </button>
               <button className="btn btn-ghost btn-icon" onClick={() => window.location.reload()}>
                 <IconRefresh /> Novo fechamento
               </button>
