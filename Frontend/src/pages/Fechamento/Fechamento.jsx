@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import './Fechamento.css';
+import "./fechamento.css";
 
 // ── Ícones SVG inline leves ──────────────────────────────────────────
 const IconUsers = () => (
