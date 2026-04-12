@@ -9,15 +9,13 @@ const Fechamento = lazy(() => import('./pages/Fechamento/Fechamento'));
 const router = createBrowserRouter([
   {
     path: '/',
-    // O Suspense exibe um fallback (ex: um spinner) enquanto o componente é baixado
     element: (
       <Suspense fallback={<div>Carregando página...</div>}>
         <Fechamento />
       </Suspense>
     ),
-    // errorElement: <PaginaDeErro />, // Você pode adicionar isso depois para tratar rota não encontrada
   },
-]);
+], { basename: '/Big-Burguer' });
 
 function App() {
   return <RouterProvider router={router} />;
