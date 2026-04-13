@@ -37,8 +37,8 @@ const IconRefresh = () => (
 );
 
 // ── Stepper de progresso ─────────────────────────────────────────────
-const STEPS = ['Equipe', 'Nomes', 'Caixa', 'Resultado'];
-const STEP_MAP = { setup: 0, nomes: 1, formulario: 2, resultado: 3 };
+const STEPS = ['Caixa', 'Resultado'];
+const STEP_MAP = {formulario: 0, resultado: 1 };
 
 const Stepper = ({ etapa }) => {
   const current = STEP_MAP[etapa] ?? 0;
@@ -89,12 +89,13 @@ const ResumoRow = ({ label, value, accent, sub }) => (
 
 // ── Componente principal ─────────────────────────────────────────────
 const Fechamento = () => {
-  const [etapa, setEtapa] = useState('setup');
-  const [qtdEntregadores, setQtdEntregadores] = useState('');
-  const [nomesEntregadores, setNomesEntregadores] = useState([]);
+  const [etapa, setEtapa] = useState('formulario');
   const [salao, setSalao] = useState({ vendaSist: 0, inicial: 0, maq: 0, din: 0, excedente: 0 });
   const [delivery, setDelivery] = useState({ vendaWeb: 0, vendaBundi: 0, maqRetirada: 0 });
-  const [dadosMotoboys, setDadosMotoboys] = useState([]);
+  const [etapa, setEtapa] = useState('formulario');
+  const [dadosMotoboys, setDadosMotoboys] = useState([
+    { nome: 'Entregador 1', qtd: 0, maq: 0, din: 0, gas: 0 }
+  ]);
   const [relatorio, setRelatorio] = useState(null);
   const resultadoRef = useRef(null);
 
@@ -166,65 +167,6 @@ const Fechamento = () => {
         <img src={logo} alt="Logo" className="fc-logo" />
         {etapa !== 'setup' && <Stepper etapa={etapa} />}
       </header>
-
-      <main className="fc-main">
-        {/* ── ETAPA 1: Setup ── */}
-        {etapa === 'setup' && (
-          <div className="fc-card fc-card--center anima-fade">
-            <div className="setup-icon-wrap">
-              <IconUsers />
-            </div>
-            <h2 className="fc-title">Iniciar Fechamento</h2>
-            <p className="fc-subtitle">Quantos entregadores trabalharam hoje?</p>
-            <input
-              type="number"
-              value={qtdEntregadores}
-              onChange={e => setQtdEntregadores(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && configurarEquipe()}
-              className="input-center"
-              placeholder="0"
-              min="0"
-              autoFocus
-            />
-            <button
-              className="btn btn-primary btn-block"
-              onClick={configurarEquipe}
-              disabled={!qtdEntregadores || Number(qtdEntregadores) <= 0}
-            >
-              Continuar
-            </button>
-          </div>
-        )}
-
-        {/* ── ETAPA 2: Nomes ── */}
-        {etapa === 'nomes' && (
-          <div className="fc-card anima-fade" style={{ maxWidth: 460, margin: '0 auto' }}>
-            <h2 className="fc-title" style={{ textAlign: 'center' }}>Nome dos entregadores</h2>
-            <p className="fc-subtitle" style={{ textAlign: 'center', marginBottom: 20 }}>
-              Pode deixar em branco se não souber
-            </p>
-            <div className="nomes-list">
-              {nomesEntregadores.map((_, i) => (
-                <div key={i} className="nome-row">
-                  <div className="nome-avatar">{i + 1}</div>
-                  <input
-                    type="text"
-                    placeholder={`Entregador ${i + 1}`}
-                    onChange={e => {
-                      const n = [...nomesEntregadores];
-                      n[i] = e.target.value;
-                      setNomesEntregadores(n);
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="btn-row">
-              <button className="btn btn-ghost" onClick={() => setEtapa('setup')}>Voltar</button>
-              <button className="btn btn-primary" onClick={confirmarNomes}>Abrir Caixa</button>
-            </div>
-          </div>
-        )}
 
         {/* ── ETAPA 3: Formulário ── */}
         {etapa === 'formulario' && (
