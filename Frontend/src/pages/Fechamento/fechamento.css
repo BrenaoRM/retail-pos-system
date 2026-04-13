@@ -644,7 +644,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
   outline: none;
 }
 
-/* ===== ANIMAÇÃO ===== */
+/* ===== ANIMAÇÃO GERAL ===== */
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(14px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -652,108 +652,220 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
 .anima-fade { animation: slideUp 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
 
-/* ===== ABAS ===== */
-.tab-switcher {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--border-md);
-  border-radius: 14px;
-  padding: 6px;
-  width: 100%;
+/* ===== ACORDEÃO DE SETORES ===== */
+.setores-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
 }
 
-.tab-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--muted);
-  font-family: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.15s;
+/* Card do acordeão */
+.setor-acordeao {
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    background: var(--card);
 }
 
-.tab-btn:hover:not(.tab-btn--active) {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text);
+.setor-acordeao--salao.aberto {
+    border-color: rgba(96, 165, 250, 0.35);
+    box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.12), 0 4px 24px rgba(96, 165, 250, 0.08);
 }
 
-.tab-btn--active {
-  color: var(--text);
-  transform: scale(1.01);
+.setor-acordeao--delivery.aberto {
+    border-color: rgba(251, 146, 60, 0.35);
+    box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.12), 0 4px 24px rgba(251, 146, 60, 0.08);
 }
 
-.tab-btn--salao.tab-btn--active {
-  background: rgba(96, 165, 250, 0.15);
-  color: var(--salao);
-  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.3);
+/* Barra superior colorida quando aberto */
+.setor-acordeao--salao.aberto { border-top: 3px solid var(--salao); }
+.setor-acordeao--delivery.aberto { border-top: 3px solid var(--delivery); }
+
+/* Cabeçalho clicável */
+.setor-acordeao-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+    position: relative;
 }
 
-.tab-btn--delivery.tab-btn--active {
-  background: rgba(251, 146, 60, 0.15);
-  color: var(--delivery);
-  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.3);
+.setor-acordeao-header:hover {
+    background: rgba(255, 255, 255, 0.03);
 }
 
-/* ===== ANIMAÇÃO DAS ABAS ===== */
-.tab-content-wrap {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
+.setor-acordeao--salao .setor-acordeao-header:hover {
+    background: rgba(96, 165, 250, 0.04);
 }
 
-.tab-content {
-  width: 100%;
-  transition: opacity 0.22s ease, transform 0.22s ease;
+.setor-acordeao--delivery .setor-acordeao-header:hover {
+    background: rgba(251, 146, 60, 0.04);
 }
 
-.tab-hidden {
-  display: none;
+/* Ícone do setor */
+.setor-acord-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.25s, color 0.25s;
 }
 
-.tab-enter {
-  opacity: 1;
-  transform: translateX(0);
-  animation: tabSlideIn 0.22s ease forwards;
+.setor-acordeao--salao .setor-acord-icon {
+    background: var(--salao-bg);
+    color: var(--muted);
 }
 
-.tab-exit {
-  opacity: 0;
-  pointer-events: none;
-  animation: tabSlideOut 0.22s ease forwards;
+.setor-acordeao--salao.aberto .setor-acord-icon {
+    background: rgba(96, 165, 250, 0.16);
+    color: var(--salao);
 }
 
-.tab-from-direita.tab-enter {
-  animation: tabSlideInDireita 0.22s ease forwards;
+.setor-acordeao--delivery .setor-acord-icon {
+    background: var(--delivery-bg);
+    color: var(--muted);
 }
 
-.tab-from-esquerda.tab-enter {
-  animation: tabSlideInEsquerda 0.22s ease forwards;
+.setor-acordeao--delivery.aberto .setor-acord-icon {
+    background: rgba(251, 146, 60, 0.16);
+    color: var(--delivery);
 }
 
-@keyframes tabSlideInDireita {
-  from { opacity: 0; transform: translateX(40px); }
-  to   { opacity: 1; transform: translateX(0); }
+/* Textos do header */
+.setor-acord-info {
+    flex: 1;
 }
 
-@keyframes tabSlideInEsquerda {
-  from { opacity: 0; transform: translateX(-40px); }
-  to   { opacity: 1; transform: translateX(0); }
+.setor-acord-titulo {
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: color 0.25s;
+    color: var(--muted);
 }
 
-@keyframes tabSlideOut {
-  from { opacity: 1; transform: translateX(0); }
-  to   { opacity: 0; transform: translateX(-20px); }
+.setor-acordeao--salao.aberto .setor-acord-titulo { color: var(--salao); }
+.setor-acordeao--delivery.aberto .setor-acord-titulo { color: var(--delivery); }
+
+.setor-acord-sub {
+    font-size: 0.75rem;
+    color: var(--subtle);
+    margin-top: 1px;
+    transition: opacity 0.2s;
 }
+
+.aberto .setor-acord-sub { opacity: 0; height: 0; overflow: hidden; margin: 0; }
+
+/* Badge de status */
+.setor-acord-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+    transition: all 0.25s;
+}
+
+.setor-acordeao--salao .setor-acord-badge {
+    background: rgba(96, 165, 250, 0.08);
+    color: var(--subtle);
+    border: 1px solid var(--border);
+}
+
+.setor-acordeao--salao.aberto .setor-acord-badge {
+    background: rgba(96, 165, 250, 0.15);
+    color: var(--salao);
+    border-color: rgba(96, 165, 250, 0.3);
+}
+
+.setor-acordeao--delivery .setor-acord-badge {
+    background: rgba(251, 146, 60, 0.08);
+    color: var(--subtle);
+    border: 1px solid var(--border);
+}
+
+.setor-acordeao--delivery.aberto .setor-acord-badge {
+    background: rgba(251, 146, 60, 0.15);
+    color: var(--delivery);
+    border-color: rgba(251, 146, 60, 0.3);
+}
+
+/* Seta giratória */
+.setor-acord-arrow {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--subtle);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s, color 0.2s;
+    flex-shrink: 0;
+}
+
+.aberto .setor-acord-arrow {
+    transform: rotate(180deg);
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--muted);
+}
+
+/* Container do conteúdo com animação */
+.setor-acord-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aberto .setor-acord-body {
+    grid-template-rows: 1fr;
+}
+
+.setor-acord-inner {
+    overflow: hidden;
+}
+
+/* Separador entre header e conteúdo */
+.setor-acord-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 20px;
+    opacity: 0;
+    transition: opacity 0.2s 0.1s;
+}
+
+.aberto .setor-acord-divider {
+    opacity: 1;
+}
+
+/* Conteúdo interno */
+.setor-acord-content {
+    padding: 20px 20px 20px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.28s 0.1s ease, transform 0.28s 0.1s ease;
+}
+
+.aberto .setor-acord-content {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Remove padding/border do .fc-card dentro do acordeão */
+.setor-acord-content .fc-card {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+}
+
 /* ===== BOTÃO COPIAR ===== */
 .btn-copiar {
   background: #25D366;
@@ -784,4 +896,7 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
     input { font-size: 16px !important; }
 
     .btn-calcular { font-size: 0.95rem; padding: 14px; }
+
+    .setor-acordeao-header { padding: 14px 16px; }
+    .setor-acord-content { padding: 16px; }
 }

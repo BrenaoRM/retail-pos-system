@@ -35,6 +35,11 @@ const IconCamera = () => (
     <circle cx="12" cy="13" r="4"/>
   </svg>
 );
+const IconChevron = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
 
 const STEPS = ['Caixa', 'Resultado'];
 const STEP_MAP = { formulario: 0, resultado: 1 };
@@ -93,11 +98,44 @@ const obterDataFechamento = () => {
   });
 };
 
+/* ===== COMPONENTE ACORDEÃO ===== */
+const SetorAcordeao = ({ tipo, titulo, subtitulo, icone, aberto, onToggle, children }) => {
+  return (
+    <div className={`setor-acordeao setor-acordeao--${tipo} ${aberto ? 'aberto' : ''}`}>
+
+      {/* Header clicável */}
+      <div className="setor-acordeao-header" onClick={onToggle} role="button" aria-expanded={aberto}>
+        <span className="setor-acord-icon">{icone}</span>
+        <div className="setor-acord-info">
+          <div className="setor-acord-titulo">{titulo}</div>
+          {!aberto && subtitulo && (
+            <div className="setor-acord-sub">{subtitulo}</div>
+          )}
+        </div>
+        <span className="setor-acord-badge">{aberto ? 'Editando' : 'Clique para abrir'}</span>
+        <span className="setor-acord-arrow"><IconChevron /></span>
+      </div>
+
+      {/* Linha divisória animada */}
+      <div className="setor-acord-divider" />
+
+      {/* Conteúdo com animação grid-template-rows */}
+      <div className="setor-acord-body">
+        <div className="setor-acord-inner">
+          <div className="setor-acord-content">
+            {children}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  );
+};
+
 const Fechamento = () => {
   const [etapa, setEtapa] = useState('formulario');
-  const [abaAtiva, setAbaAtiva] = useState('salao');
-  const [abaAnterior, setAbaAnterior] = useState(null);
-  const [animando, setAnimando] = useState(false);
+  // Controla qual setor está aberto (null = nenhum, 'salao', 'delivery', etc.)
+  const [setorAberto, setSetorAberto] = useState('salao');
   const [salao, setSalao] = useState({ vendaSist: 0, inicial: 0, maq: 0, din: 0, excedente: 0 });
   const [delivery, setDelivery] = useState({ vendaWeb: 0, vendaBundi: 0, maqRetirada: 0 });
   const [dadosMotoboys, setDadosMotoboys] = useState([
@@ -109,15 +147,9 @@ const Fechamento = () => {
   const resultadoRef = useRef(null);
   const conteudoRef = useRef(null);
 
-  const trocarAba = (novaAba) => {
-    if (novaAba === abaAtiva || animando) return;
-    setAbaAnterior(abaAtiva);
-    setAnimando(true);
-    setTimeout(() => {
-      setAbaAtiva(novaAba);
-      setAbaAnterior(null);
-      setAnimando(false);
-    }, 220);
+  const toggleSetor = (setor) => {
+    // Clicando no aberto → fecha; clicando em outro → abre o novo
+    setSetorAberto(prev => prev === setor ? null : setor);
   };
 
   const handleMotoboyChange = (index, campo, valor) => {
@@ -197,8 +229,6 @@ const Fechamento = () => {
 
   const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
 
-  const direcao = abaAtiva === 'delivery' ? 'direita' : 'esquerda';
-
   return (
     <div className="fc-root">
       <header className="fc-header">
@@ -211,132 +241,141 @@ const Fechamento = () => {
         {etapa === 'formulario' && (
           <div className="anima-fade" style={{ width: '100%' }}>
 
-            {/* Seletor de abas */}
-            <div className="tab-switcher">
-              <button
-                className={`tab-btn ${abaAtiva === 'salao' ? 'tab-btn--active tab-btn--salao' : ''}`}
-                onClick={() => trocarAba('salao')}
-              >
-                <IconStore /> Salão
-              </button>
-              <button
-                className={`tab-btn ${abaAtiva === 'delivery' ? 'tab-btn--active tab-btn--delivery' : ''}`}
-                onClick={() => trocarAba('delivery')}
-              >
-                <IconBike /> Delivery
-              </button>
-            </div>
-
-            {/* Container das abas */}
-            <div className="tab-content-wrap">
+            {/* Lista de setores em acordeão */}
+            <div className="setores-list">
 
               {/* SALÃO */}
-              <div className={`tab-content ${abaAtiva === 'salao' ? (animando ? 'tab-exit' : 'tab-enter') : (abaAnterior === 'salao' ? 'tab-exit' : 'tab-hidden')} tab-from-${direcao === 'direita' ? 'esquerda' : 'direita'}`}>
-                <div className="fc-card fc-card--salao">
-                  <div className="setor-header setor-header--salao">
-                    <span className="setor-icon"><IconStore /></span>
-                    <span className="setor-title">Salão</span>
-                  </div>
-                  <div className="section-block">
-                    <p className="section-label">Sistema</p>
-                    <Field label="Vendas totais (mesas)" value={salao.vendaSist}
-                      onChange={e => setSalao({ ...salao, vendaSist: Number(e.target.value) })} />
-                  </div>
-                  <div className="section-divider" />
-                  <div className="section-block">
-                    <p className="section-label">Caixa físico</p>
-                    <Field label="Troco inicial" hint="valor que estava na gaveta ao abrir"
-                      value={salao.inicial} onChange={e => setSalao({ ...salao, inicial: Number(e.target.value) })} />
-                    <Field label="Maquininha" value={salao.maq}
-                      onChange={e => setSalao({ ...salao, maq: Number(e.target.value) })} />
-                    <Field label="Dinheiro na gaveta" value={salao.din}
-                      onChange={e => setSalao({ ...salao, din: Number(e.target.value) })} />
-                  </div>
-                  <div className="section-divider" />
-                  <div className="section-block">
-                    <p className="section-label">Deduções</p>
-                    <Field label="Excedente funcionários" value={salao.excedente}
-                      onChange={e => setSalao({ ...salao, excedente: Number(e.target.value) })} />
-                  </div>
+              <SetorAcordeao
+                tipo="salao"
+                titulo="Salão"
+                subtitulo="Vendas, caixa físico e deduções"
+                icone={<IconStore />}
+                aberto={setorAberto === 'salao'}
+                onToggle={() => toggleSetor('salao')}
+              >
+                <div className="section-block">
+                  <p className="section-label">Sistema</p>
+                  <Field label="Vendas totais (mesas)" value={salao.vendaSist}
+                    onChange={e => setSalao({ ...salao, vendaSist: Number(e.target.value) })} />
                 </div>
-              </div>
+                <div className="section-divider" />
+                <div className="section-block">
+                  <p className="section-label">Caixa físico</p>
+                  <Field label="Troco inicial" hint="valor que estava na gaveta ao abrir"
+                    value={salao.inicial} onChange={e => setSalao({ ...salao, inicial: Number(e.target.value) })} />
+                  <Field label="Maquininha" value={salao.maq}
+                    onChange={e => setSalao({ ...salao, maq: Number(e.target.value) })} />
+                  <Field label="Dinheiro na gaveta" value={salao.din}
+                    onChange={e => setSalao({ ...salao, din: Number(e.target.value) })} />
+                </div>
+                <div className="section-divider" />
+                <div className="section-block">
+                  <p className="section-label">Deduções</p>
+                  <Field label="Excedente funcionários" value={salao.excedente}
+                    onChange={e => setSalao({ ...salao, excedente: Number(e.target.value) })} />
+                </div>
+              </SetorAcordeao>
 
               {/* DELIVERY */}
-              <div className={`tab-content ${abaAtiva === 'delivery' ? (animando ? 'tab-exit' : 'tab-enter') : (abaAnterior === 'delivery' ? 'tab-exit' : 'tab-hidden')} tab-from-${direcao}`}>
-                <div className="fc-card fc-card--delivery">
-                  <div className="setor-header setor-header--delivery">
-                    <span className="setor-icon"><IconBike /></span>
-                    <span className="setor-title">Delivery / Retirada</span>
+              <SetorAcordeao
+                tipo="delivery"
+                titulo="Delivery / Retirada"
+                subtitulo="Vendas online, balcão e motoboys"
+                icone={<IconBike />}
+                aberto={setorAberto === 'delivery'}
+                onToggle={() => toggleSetor('delivery')}
+              >
+                <div className="section-block">
+                  <p className="section-label">Vendas online</p>
+                  <Field label="Web Cardápio" value={delivery.vendaWeb}
+                    onChange={e => setDelivery({ ...delivery, vendaWeb: Number(e.target.value) })} />
+                  <Field label="App Brendi" value={delivery.vendaBundi}
+                    onChange={e => setDelivery({ ...delivery, vendaBundi: Number(e.target.value) })} />
+                </div>
+                <div className="section-divider" />
+                <div className="section-block">
+                  <p className="section-label">Retirada no balcão</p>
+                  <Field label="Maquininha balcão" value={delivery.maqRetirada}
+                    onChange={e => setDelivery({ ...delivery, maqRetirada: Number(e.target.value) })} />
+                </div>
+                <div className="section-divider" />
+                <div className="section-block">
+                  <div className="motoboy-section-header">
+                    <p className="section-label" style={{ margin: 0 }}>Acerto dos motoboys</p>
+                    <div className="motoboy-counter">
+                      <button className="counter-btn"
+                        onClick={() => { if (dadosMotoboys.length <= 1) return; setDadosMotoboys(prev => prev.slice(0, -1)); }}
+                        disabled={dadosMotoboys.length <= 1}>−</button>
+                      <span className="counter-val">{dadosMotoboys.length}</span>
+                      <button className="counter-btn"
+                        onClick={() => setDadosMotoboys(prev => [
+                          ...prev, { nome: `Entregador ${prev.length + 1}`, qtd: 0, maq: 0, din: 0, gas: 0 }
+                        ])}>+</button>
+                    </div>
                   </div>
-                  <div className="section-block">
-                    <p className="section-label">Vendas online</p>
-                    <Field label="Web Cardápio" value={delivery.vendaWeb}
-                      onChange={e => setDelivery({ ...delivery, vendaWeb: Number(e.target.value) })} />
-                    <Field label="App Brendi" value={delivery.vendaBundi}
-                      onChange={e => setDelivery({ ...delivery, vendaBundi: Number(e.target.value) })} />
-                  </div>
-                  <div className="section-divider" />
-                  <div className="section-block">
-                    <p className="section-label">Retirada no balcão</p>
-                    <Field label="Maquininha balcão" value={delivery.maqRetirada}
-                      onChange={e => setDelivery({ ...delivery, maqRetirada: Number(e.target.value) })} />
-                  </div>
-                  <div className="section-divider" />
-                  <div className="section-block">
-                    <div className="motoboy-section-header">
-                      <p className="section-label" style={{ margin: 0 }}>Acerto dos motoboys</p>
-                      <div className="motoboy-counter">
-                        <button className="counter-btn"
-                          onClick={() => { if (dadosMotoboys.length <= 1) return; setDadosMotoboys(prev => prev.slice(0, -1)); }}
-                          disabled={dadosMotoboys.length <= 1}>−</button>
-                        <span className="counter-val">{dadosMotoboys.length}</span>
-                        <button className="counter-btn"
-                          onClick={() => setDadosMotoboys(prev => [
-                            ...prev, { nome: `Entregador ${prev.length + 1}`, qtd: 0, maq: 0, din: 0, gas: 0 }
-                          ])}>+</button>
+                  {dadosMotoboys.map((m, i) => (
+                    <div key={i} className="motoboy-card">
+                      <div className="motoboy-header">
+                        <div className="motoboy-avatar">{m.nome.charAt(0).toUpperCase()}</div>
+                        <input type="text" className="motoboy-nome-input" value={m.nome}
+                          placeholder={`Entregador ${i + 1}`}
+                          onChange={e => {
+                            setDadosMotoboys(prev => {
+                              const next = [...prev];
+                              next[i] = { ...next[i], nome: e.target.value };
+                              return next;
+                            });
+                          }} />
+                      </div>
+                      <div className="motoboy-fields">
+                        <div className="moto-field">
+                          <span className="moto-lbl">Entregas</span>
+                          <input type="number" placeholder="0" value={m.qtd || ''}
+                            onChange={e => handleMotoboyChange(i, 'qtd', e.target.value)} />
+                        </div>
+                        <div className="moto-field">
+                          <span className="moto-lbl">Maquininha</span>
+                          <input type="number" placeholder="0" value={m.maq || ''}
+                            onChange={e => handleMotoboyChange(i, 'maq', e.target.value)} />
+                        </div>
+                        <div className="moto-field">
+                          <span className="moto-lbl">Dinheiro</span>
+                          <input type="number" placeholder="0" value={m.din || ''}
+                            onChange={e => handleMotoboyChange(i, 'din', e.target.value)} />
+                        </div>
+                        <div className="moto-field">
+                          <span className="moto-lbl">Gasolina</span>
+                          <input type="number" placeholder="0" value={m.gas || ''}
+                            onChange={e => handleMotoboyChange(i, 'gas', e.target.value)} />
+                        </div>
                       </div>
                     </div>
-                    {dadosMotoboys.map((m, i) => (
-                      <div key={i} className="motoboy-card">
-                        <div className="motoboy-header">
-                          <div className="motoboy-avatar">{m.nome.charAt(0).toUpperCase()}</div>
-                          <input type="text" className="motoboy-nome-input" value={m.nome}
-                            placeholder={`Entregador ${i + 1}`}
-                            onChange={e => {
-                              setDadosMotoboys(prev => {
-                                const next = [...prev];
-                                next[i] = { ...next[i], nome: e.target.value };
-                                return next;
-                              });
-                            }} />
-                        </div>
-                        <div className="motoboy-fields">
-                          <div className="moto-field">
-                            <span className="moto-lbl">Entregas</span>
-                            <input type="number" placeholder="0" value={m.qtd || ''}
-                              onChange={e => handleMotoboyChange(i, 'qtd', e.target.value)} />
-                          </div>
-                          <div className="moto-field">
-                            <span className="moto-lbl">Maquininha</span>
-                            <input type="number" placeholder="0" value={m.maq || ''}
-                              onChange={e => handleMotoboyChange(i, 'maq', e.target.value)} />
-                          </div>
-                          <div className="moto-field">
-                            <span className="moto-lbl">Dinheiro</span>
-                            <input type="number" placeholder="0" value={m.din || ''}
-                              onChange={e => handleMotoboyChange(i, 'din', e.target.value)} />
-                          </div>
-                          <div className="moto-field">
-                            <span className="moto-lbl">Gasolina</span>
-                            <input type="number" placeholder="0" value={m.gas || ''}
-                              onChange={e => handleMotoboyChange(i, 'gas', e.target.value)} />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
-              </div>
+              </SetorAcordeao>
+
+              {/*
+                ✅ PARA ADICIONAR NOVOS SETORES NO FUTURO:
+                Basta copiar o bloco <SetorAcordeao> acima e ajustar:
+                  - tipo="nomeDoSetor" (usado na classe CSS)
+                  - titulo, subtitulo, icone
+                  - aberto={setorAberto === 'nomeDoSetor'}
+                  - onToggle={() => toggleSetor('nomeDoSetor')}
+                  - E definir as variáveis CSS --nomeDoSetor e --nomeDoSetor-bg no :root
+
+                Exemplo:
+                <SetorAcordeao
+                  tipo="balcao"
+                  titulo="Balcão"
+                  subtitulo="Vendas diretas no balcão"
+                  icone={<IconBalcao />}
+                  aberto={setorAberto === 'balcao'}
+                  onToggle={() => toggleSetor('balcao')}
+                >
+                  ... campos ...
+                </SetorAcordeao>
+              */}
+
             </div>
 
             <button className="btn btn-calcular" onClick={calcularTudo}>
