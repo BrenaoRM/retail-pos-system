@@ -316,34 +316,71 @@ const Fechamento = () => {
                 <div className="section-divider" />
 
                 <div className="section-block">
-                  <p className="section-label">Acerto dos motoboys</p>
+                  <div className="motoboy-section-header">
+                    <p className="section-label" style={{ margin: 0 }}>Acerto dos motoboys</p>
+                    <div className="motoboy-counter">
+                      <button
+                        className="counter-btn"
+                        onClick={() => {
+                          if (dadosMotoboys.length <= 1) return;
+                          setDadosMotoboys(prev => prev.slice(0, -1));
+                        }}
+                        disabled={dadosMotoboys.length <= 1}
+                      >−</button>
+                      <span className="counter-val">{dadosMotoboys.length}</span>
+                      <button
+                        className="counter-btn"
+                        onClick={() => setDadosMotoboys(prev => [
+                          ...prev,
+                          { nome: `Entregador ${prev.length + 1}`, qtd: 0, maq: 0, din: 0, gas: 0 }
+                        ])}
+                      >+</button>
+                    </div>
+                  </div>
+
                   {dadosMotoboys.map((m, i) => (
                     <div key={i} className="motoboy-card">
                       <div className="motoboy-header">
                         <div className="motoboy-avatar">
                           {m.nome.charAt(0).toUpperCase()}
                         </div>
-                        <span className="motoboy-nome">{m.nome}</span>
+                        <input
+                          type="text"
+                          className="motoboy-nome-input"
+                          value={m.nome}
+                          placeholder={`Entregador ${i + 1}`}
+                          onChange={e => {
+                            setDadosMotoboys(prev => {
+                              const next = [...prev];
+                              next[i] = { ...next[i], nome: e.target.value };
+                              return next;
+                            });
+                          }}
+                        />
                       </div>
                       <div className="motoboy-fields">
                         <div className="moto-field">
                           <span className="moto-lbl">Entregas</span>
                           <input type="number" placeholder="0"
+                            value={m.qtd || ''}
                             onChange={e => handleMotoboyChange(i, 'qtd', e.target.value)} />
                         </div>
                         <div className="moto-field">
                           <span className="moto-lbl">Maquininha</span>
                           <input type="number" placeholder="0"
+                            value={m.maq || ''}
                             onChange={e => handleMotoboyChange(i, 'maq', e.target.value)} />
                         </div>
                         <div className="moto-field">
                           <span className="moto-lbl">Dinheiro</span>
                           <input type="number" placeholder="0"
+                            value={m.din || ''}
                             onChange={e => handleMotoboyChange(i, 'din', e.target.value)} />
                         </div>
                         <div className="moto-field">
                           <span className="moto-lbl">Gasolina</span>
                           <input type="number" placeholder="0"
+                            value={m.gas || ''}
                             onChange={e => handleMotoboyChange(i, 'gas', e.target.value)} />
                         </div>
                       </div>
