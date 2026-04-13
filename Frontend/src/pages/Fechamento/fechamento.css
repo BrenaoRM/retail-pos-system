@@ -652,6 +652,108 @@ input[type=number] { -moz-appearance: textfield; appearance: textfield; }
 
 .anima-fade { animation: slideUp 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) both; }
 
+/* ===== ABAS ===== */
+.tab-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-md);
+  border-radius: 14px;
+  padding: 6px;
+  width: 100%;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+
+.tab-btn:hover:not(.tab-btn--active) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.tab-btn--active {
+  color: var(--text);
+  transform: scale(1.01);
+}
+
+.tab-btn--salao.tab-btn--active {
+  background: rgba(96, 165, 250, 0.15);
+  color: var(--salao);
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.3);
+}
+
+.tab-btn--delivery.tab-btn--active {
+  background: rgba(251, 146, 60, 0.15);
+  color: var(--delivery);
+  box-shadow: 0 0 0 1px rgba(251, 146, 60, 0.3);
+}
+
+/* ===== ANIMAÇÃO DAS ABAS ===== */
+.tab-content-wrap {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.tab-content {
+  width: 100%;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.tab-hidden {
+  display: none;
+}
+
+.tab-enter {
+  opacity: 1;
+  transform: translateX(0);
+  animation: tabSlideIn 0.22s ease forwards;
+}
+
+.tab-exit {
+  opacity: 0;
+  pointer-events: none;
+  animation: tabSlideOut 0.22s ease forwards;
+}
+
+.tab-from-direita.tab-enter {
+  animation: tabSlideInDireita 0.22s ease forwards;
+}
+
+.tab-from-esquerda.tab-enter {
+  animation: tabSlideInEsquerda 0.22s ease forwards;
+}
+
+@keyframes tabSlideInDireita {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tabSlideInEsquerda {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes tabSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-20px); }
+}
 /* ===== BOTÃO COPIAR ===== */
 .btn-copiar {
   background: #25D366;

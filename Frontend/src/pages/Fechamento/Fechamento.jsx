@@ -95,6 +95,9 @@ const obterDataFechamento = () => {
 
 const Fechamento = () => {
   const [etapa, setEtapa] = useState('formulario');
+  const [abaAtiva, setAbaAtiva] = useState('salao');
+  const [abaAnterior, setAbaAnterior] = useState(null);
+  const [animando, setAnimando] = useState(false);
   const [salao, setSalao] = useState({ vendaSist: 0, inicial: 0, maq: 0, din: 0, excedente: 0 });
   const [delivery, setDelivery] = useState({ vendaWeb: 0, vendaBundi: 0, maqRetirada: 0 });
   const [dadosMotoboys, setDadosMotoboys] = useState([
@@ -105,6 +108,17 @@ const Fechamento = () => {
   const [copiado, setCopiado] = useState(false);
   const resultadoRef = useRef(null);
   const conteudoRef = useRef(null);
+
+  const trocarAba = (novaAba) => {
+    if (novaAba === abaAtiva || animando) return;
+    setAbaAnterior(abaAtiva);
+    setAnimando(true);
+    setTimeout(() => {
+      setAbaAtiva(novaAba);
+      setAbaAnterior(null);
+      setAnimando(false);
+    }, 220);
+  };
 
   const handleMotoboyChange = (index, campo, valor) => {
     setDadosMotoboys(prev => {
@@ -183,6 +197,8 @@ const Fechamento = () => {
 
   const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
 
+  const direcao = abaAtiva === 'delivery' ? 'direita' : 'esquerda';
+
   return (
     <div className="fc-root">
       <header className="fc-header">
@@ -194,109 +210,131 @@ const Fechamento = () => {
 
         {etapa === 'formulario' && (
           <div className="anima-fade" style={{ width: '100%' }}>
-            <div className="fc-grid">
+
+            {/* Seletor de abas */}
+            <div className="tab-switcher">
+              <button
+                className={`tab-btn ${abaAtiva === 'salao' ? 'tab-btn--active tab-btn--salao' : ''}`}
+                onClick={() => trocarAba('salao')}
+              >
+                <IconStore /> Salão
+              </button>
+              <button
+                className={`tab-btn ${abaAtiva === 'delivery' ? 'tab-btn--active tab-btn--delivery' : ''}`}
+                onClick={() => trocarAba('delivery')}
+              >
+                <IconBike /> Delivery
+              </button>
+            </div>
+
+            {/* Container das abas */}
+            <div className="tab-content-wrap">
 
               {/* SALÃO */}
-              <div className="fc-card fc-card--salao">
-                <div className="setor-header setor-header--salao">
-                  <span className="setor-icon"><IconStore /></span>
-                  <span className="setor-title">Salão</span>
-                </div>
-                <div className="section-block">
-                  <p className="section-label">Sistema</p>
-                  <Field label="Vendas totais (mesas)" value={salao.vendaSist}
-                    onChange={e => setSalao({ ...salao, vendaSist: Number(e.target.value) })} />
-                </div>
-                <div className="section-divider" />
-                <div className="section-block">
-                  <p className="section-label">Caixa físico</p>
-                  <Field label="Troco inicial" hint="valor que estava na gaveta ao abrir"
-                    value={salao.inicial} onChange={e => setSalao({ ...salao, inicial: Number(e.target.value) })} />
-                  <Field label="Maquininha" value={salao.maq}
-                    onChange={e => setSalao({ ...salao, maq: Number(e.target.value) })} />
-                  <Field label="Dinheiro na gaveta" value={salao.din}
-                    onChange={e => setSalao({ ...salao, din: Number(e.target.value) })} />
-                </div>
-                <div className="section-divider" />
-                <div className="section-block">
-                  <p className="section-label">Deduções</p>
-                  <Field label="Excedente funcionários" value={salao.excedente}
-                    onChange={e => setSalao({ ...salao, excedente: Number(e.target.value) })} />
+              <div className={`tab-content ${abaAtiva === 'salao' ? (animando ? 'tab-exit' : 'tab-enter') : (abaAnterior === 'salao' ? 'tab-exit' : 'tab-hidden')} tab-from-${direcao === 'direita' ? 'esquerda' : 'direita'}`}>
+                <div className="fc-card fc-card--salao">
+                  <div className="setor-header setor-header--salao">
+                    <span className="setor-icon"><IconStore /></span>
+                    <span className="setor-title">Salão</span>
+                  </div>
+                  <div className="section-block">
+                    <p className="section-label">Sistema</p>
+                    <Field label="Vendas totais (mesas)" value={salao.vendaSist}
+                      onChange={e => setSalao({ ...salao, vendaSist: Number(e.target.value) })} />
+                  </div>
+                  <div className="section-divider" />
+                  <div className="section-block">
+                    <p className="section-label">Caixa físico</p>
+                    <Field label="Troco inicial" hint="valor que estava na gaveta ao abrir"
+                      value={salao.inicial} onChange={e => setSalao({ ...salao, inicial: Number(e.target.value) })} />
+                    <Field label="Maquininha" value={salao.maq}
+                      onChange={e => setSalao({ ...salao, maq: Number(e.target.value) })} />
+                    <Field label="Dinheiro na gaveta" value={salao.din}
+                      onChange={e => setSalao({ ...salao, din: Number(e.target.value) })} />
+                  </div>
+                  <div className="section-divider" />
+                  <div className="section-block">
+                    <p className="section-label">Deduções</p>
+                    <Field label="Excedente funcionários" value={salao.excedente}
+                      onChange={e => setSalao({ ...salao, excedente: Number(e.target.value) })} />
+                  </div>
                 </div>
               </div>
 
               {/* DELIVERY */}
-              <div className="fc-card fc-card--delivery">
-                <div className="setor-header setor-header--delivery">
-                  <span className="setor-icon"><IconBike /></span>
-                  <span className="setor-title">Delivery / Retirada</span>
-                </div>
-                <div className="section-block">
-                  <p className="section-label">Vendas online</p>
-                  <Field label="Web Cardápio" value={delivery.vendaWeb}
-                    onChange={e => setDelivery({ ...delivery, vendaWeb: Number(e.target.value) })} />
-                  <Field label="App Brendi" value={delivery.vendaBundi}
-                    onChange={e => setDelivery({ ...delivery, vendaBundi: Number(e.target.value) })} />
-                </div>
-                <div className="section-divider" />
-                <div className="section-block">
-                  <p className="section-label">Retirada no balcão</p>
-                  <Field label="Maquininha balcão" value={delivery.maqRetirada}
-                    onChange={e => setDelivery({ ...delivery, maqRetirada: Number(e.target.value) })} />
-                </div>
-                <div className="section-divider" />
-                <div className="section-block">
-                  <div className="motoboy-section-header">
-                    <p className="section-label" style={{ margin: 0 }}>Acerto dos motoboys</p>
-                    <div className="motoboy-counter">
-                      <button className="counter-btn"
-                        onClick={() => { if (dadosMotoboys.length <= 1) return; setDadosMotoboys(prev => prev.slice(0, -1)); }}
-                        disabled={dadosMotoboys.length <= 1}>−</button>
-                      <span className="counter-val">{dadosMotoboys.length}</span>
-                      <button className="counter-btn"
-                        onClick={() => setDadosMotoboys(prev => [
-                          ...prev, { nome: `Entregador ${prev.length + 1}`, qtd: 0, maq: 0, din: 0, gas: 0 }
-                        ])}>+</button>
-                    </div>
+              <div className={`tab-content ${abaAtiva === 'delivery' ? (animando ? 'tab-exit' : 'tab-enter') : (abaAnterior === 'delivery' ? 'tab-exit' : 'tab-hidden')} tab-from-${direcao}`}>
+                <div className="fc-card fc-card--delivery">
+                  <div className="setor-header setor-header--delivery">
+                    <span className="setor-icon"><IconBike /></span>
+                    <span className="setor-title">Delivery / Retirada</span>
                   </div>
-                  {dadosMotoboys.map((m, i) => (
-                    <div key={i} className="motoboy-card">
-                      <div className="motoboy-header">
-                        <div className="motoboy-avatar">{m.nome.charAt(0).toUpperCase()}</div>
-                        <input type="text" className="motoboy-nome-input" value={m.nome}
-                          placeholder={`Entregador ${i + 1}`}
-                          onChange={e => {
-                            setDadosMotoboys(prev => {
-                              const next = [...prev];
-                              next[i] = { ...next[i], nome: e.target.value };
-                              return next;
-                            });
-                          }} />
-                      </div>
-                      <div className="motoboy-fields">
-                        <div className="moto-field">
-                          <span className="moto-lbl">Entregas</span>
-                          <input type="number" placeholder="0" value={m.qtd || ''}
-                            onChange={e => handleMotoboyChange(i, 'qtd', e.target.value)} />
-                        </div>
-                        <div className="moto-field">
-                          <span className="moto-lbl">Maquininha</span>
-                          <input type="number" placeholder="0" value={m.maq || ''}
-                            onChange={e => handleMotoboyChange(i, 'maq', e.target.value)} />
-                        </div>
-                        <div className="moto-field">
-                          <span className="moto-lbl">Dinheiro</span>
-                          <input type="number" placeholder="0" value={m.din || ''}
-                            onChange={e => handleMotoboyChange(i, 'din', e.target.value)} />
-                        </div>
-                        <div className="moto-field">
-                          <span className="moto-lbl">Gasolina</span>
-                          <input type="number" placeholder="0" value={m.gas || ''}
-                            onChange={e => handleMotoboyChange(i, 'gas', e.target.value)} />
-                        </div>
+                  <div className="section-block">
+                    <p className="section-label">Vendas online</p>
+                    <Field label="Web Cardápio" value={delivery.vendaWeb}
+                      onChange={e => setDelivery({ ...delivery, vendaWeb: Number(e.target.value) })} />
+                    <Field label="App Brendi" value={delivery.vendaBundi}
+                      onChange={e => setDelivery({ ...delivery, vendaBundi: Number(e.target.value) })} />
+                  </div>
+                  <div className="section-divider" />
+                  <div className="section-block">
+                    <p className="section-label">Retirada no balcão</p>
+                    <Field label="Maquininha balcão" value={delivery.maqRetirada}
+                      onChange={e => setDelivery({ ...delivery, maqRetirada: Number(e.target.value) })} />
+                  </div>
+                  <div className="section-divider" />
+                  <div className="section-block">
+                    <div className="motoboy-section-header">
+                      <p className="section-label" style={{ margin: 0 }}>Acerto dos motoboys</p>
+                      <div className="motoboy-counter">
+                        <button className="counter-btn"
+                          onClick={() => { if (dadosMotoboys.length <= 1) return; setDadosMotoboys(prev => prev.slice(0, -1)); }}
+                          disabled={dadosMotoboys.length <= 1}>−</button>
+                        <span className="counter-val">{dadosMotoboys.length}</span>
+                        <button className="counter-btn"
+                          onClick={() => setDadosMotoboys(prev => [
+                            ...prev, { nome: `Entregador ${prev.length + 1}`, qtd: 0, maq: 0, din: 0, gas: 0 }
+                          ])}>+</button>
                       </div>
                     </div>
-                  ))}
+                    {dadosMotoboys.map((m, i) => (
+                      <div key={i} className="motoboy-card">
+                        <div className="motoboy-header">
+                          <div className="motoboy-avatar">{m.nome.charAt(0).toUpperCase()}</div>
+                          <input type="text" className="motoboy-nome-input" value={m.nome}
+                            placeholder={`Entregador ${i + 1}`}
+                            onChange={e => {
+                              setDadosMotoboys(prev => {
+                                const next = [...prev];
+                                next[i] = { ...next[i], nome: e.target.value };
+                                return next;
+                              });
+                            }} />
+                        </div>
+                        <div className="motoboy-fields">
+                          <div className="moto-field">
+                            <span className="moto-lbl">Entregas</span>
+                            <input type="number" placeholder="0" value={m.qtd || ''}
+                              onChange={e => handleMotoboyChange(i, 'qtd', e.target.value)} />
+                          </div>
+                          <div className="moto-field">
+                            <span className="moto-lbl">Maquininha</span>
+                            <input type="number" placeholder="0" value={m.maq || ''}
+                              onChange={e => handleMotoboyChange(i, 'maq', e.target.value)} />
+                          </div>
+                          <div className="moto-field">
+                            <span className="moto-lbl">Dinheiro</span>
+                            <input type="number" placeholder="0" value={m.din || ''}
+                              onChange={e => handleMotoboyChange(i, 'din', e.target.value)} />
+                          </div>
+                          <div className="moto-field">
+                            <span className="moto-lbl">Gasolina</span>
+                            <input type="number" placeholder="0" value={m.gas || ''}
+                              onChange={e => handleMotoboyChange(i, 'gas', e.target.value)} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -309,8 +347,6 @@ const Fechamento = () => {
 
         {etapa === 'resultado' && relatorio && (
           <div ref={resultadoRef} className="anima-fade" style={{ width: '100%' }}>
-
-            {/* Apenas esta div é capturada na imagem */}
             <div ref={conteudoRef} style={{ padding: '16px', background: '#0f172a', borderRadius: '14px' }}>
               <div className={`resultado-banner ${positivo ? 'banner--ok' : 'banner--alerta'}`}>
                 <span className="banner-icon">{positivo ? <IconCheck /> : <IconAlert />}</span>
@@ -369,7 +405,6 @@ const Fechamento = () => {
               </div>
             </div>
 
-            {/* Botões fora da captura */}
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 24, flexWrap: 'wrap' }}>
               <button className="btn btn-ghost btn-icon" onClick={() => setEtapa('formulario')}>
                 ← Voltar e editar
@@ -385,7 +420,6 @@ const Fechamento = () => {
                 <IconRefresh /> Novo fechamento
               </button>
             </div>
-
           </div>
         )}
 
