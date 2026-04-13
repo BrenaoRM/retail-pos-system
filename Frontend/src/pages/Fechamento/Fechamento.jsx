@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import "./fechamento.css";
 import logo from '/img/logo.png';
 import html2canvas from 'html2canvas';
 
-/* ===== ÍCONES ===== */
+/* =====================================================================
+   ÍCONES
+===================================================================== */
 const IconStore = () => (
   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
@@ -40,9 +42,49 @@ const IconCamera = () => (
     <circle cx="12" cy="13" r="4"/>
   </svg>
 );
+const IconHistory = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
+const IconWarning = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
 
-/* ===== STEPPER ===== */
-const STEPS   = ['Caixa', 'Resultado'];
+/* =====================================================================
+   HELPERS — MOEDA
+===================================================================== */
+// Formata número para exibição: 1500.5 → "1.500,50"
+const formatBRL = (val) => {
+  const n = Number(val) || 0;
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+// Converte string formatada de volta para número: "1.500,50" → 1500.5
+const parseBRL = (str) => {
+  if (str === '' || str === null || str === undefined) return 0;
+  // Remove pontos de milhar e troca vírgula por ponto
+  const clean = String(str).replace(/\./g, '').replace(',', '.');
+  return parseFloat(clean) || 0;
+};
+
+// Estado inicial padrão
+const SALAO_INICIAL    = { vendaSist: 0, inicial: 0, maq: 0, din: 0, excedente: 0 };
+const DELIVERY_INICIAL = { vendaWeb: 0, vendaBundi: 0, maqRetirada: 0 };
+const MOTOBOYS_INICIAL = [{ nome: 'Entregador 1', qtd: 0, maq: 0, din: 0, gas: 0 }];
+const MAX_HISTORICO    = 10;
+const STORAGE_KEY      = 'fc_rascunho';
+const HISTORICO_KEY    = 'fc_historico';
+
+/* =====================================================================
+   STEPPER
+===================================================================== */
+const STEPS    = ['Caixa', 'Resultado'];
 const STEP_MAP = { formulario: 0, resultado: 1 };
 
 const Stepper = ({ etapa }) => {
@@ -66,53 +108,83 @@ const Stepper = ({ etapa }) => {
   );
 };
 
-/* ===== FIELD ===== */
-const Field = ({ label, hint, value, onChange, prefix = 'R$', type = 'number' }) => (
-  <div className="field">
-    <label className="field-label">{label}</label>
-    {hint && <span className="field-hint">{hint}</span>}
-    <div className="field-input-wrap">
-      {prefix && <span className="field-prefix">{prefix}</span>}
-      <input
-        type={type}
-        value={value || ''}
-        onChange={onChange}
-        placeholder="0"
-      />
-    </div>
-  </div>
-);
+/* =====================================================================
+   FIELD COM FORMATAÇÃO DE MOEDA
+   - Exibe valor formatado (R$ 1.500,00) quando fora do foco
+   - Permite digitar número limpo quando dentro do foco
+===================================================================== */
+const Field = ({ label, hint, value, onChange, prefix = 'R$', error }) => {
+  const [focused,      setFocused]      = useState(false);
+  const [inputDisplay, setInputDisplay] = useState('');
 
-/* ===== RESUMO ROW ===== */
+  // Atualiza o display quando o valor externo muda e o campo não está focado
+  useEffect(() => {
+    if (!focused) {
+      setInputDisplay(value ? formatBRL(value) : '');
+    }
+  }, [value, focused]);
+
+  const handleFocus = () => {
+    setFocused(true);
+    // Ao focar, mostra o número cru para facilitar edição
+    setInputDisplay(value ? String(value).replace('.', ',') : '');
+  };
+
+  const handleChange = (e) => {
+    const raw = e.target.value;
+    setInputDisplay(raw);
+    // Converte para número e repassa ao pai
+    const num = parseBRL(raw);
+    onChange(num);
+  };
+
+  const handleBlur = () => {
+    setFocused(false);
+    // Formata ao sair do campo
+    setInputDisplay(value ? formatBRL(value) : '');
+  };
+
+  return (
+    <div className="field">
+      <label className="field-label">{label}</label>
+      {hint && <span className="field-hint">{hint}</span>}
+      <div className={`field-input-wrap ${error ? 'field-error' : ''}`}>
+        {prefix && <span className="field-prefix">{prefix}</span>}
+        <input
+          type="text"
+          inputMode="decimal"
+          value={inputDisplay}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder="0,00"
+        />
+      </div>
+      {error && <span className="field-error-msg">{error}</span>}
+    </div>
+  );
+};
+
+/* =====================================================================
+   RESUMO ROW
+===================================================================== */
 const ResumoRow = ({ label, value, accent, sub }) => (
   <div className={`resumo-row ${sub ? 'sub' : ''} ${accent ? 'accent' : ''}`}>
     <span className="resumo-label">{label}</span>
-    <span className="resumo-val">R$ {Number(value).toFixed(2)}</span>
+    <span className="resumo-val">R$ {formatBRL(value)}</span>
   </div>
 );
 
-/* ===== HELPERS ===== */
-const obterDataFechamento = () => {
-  const agora = new Date();
-  const hora  = agora.getHours();
-  const data  = hora < 17 ? new Date(agora.setDate(agora.getDate() - 1)) : agora;
-  return data.toLocaleDateString('pt-BR', {
-    weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric',
-  });
-};
-
-/* ===================================================================
+/* =====================================================================
    TOGGLE PILL
-   Calcula a posição/largura da pill a partir dos refs dos botões.
-=================================================================== */
-const SetorToggle = ({ aba, onChange, setores }) => {
-  const btnRefs  = useRef([]);
-  const pillRef  = useRef(null);
+===================================================================== */
+const SetorToggle = ({ aba, onChange, setores, totais }) => {
+  const btnRefs = useRef([]);
+  const pillRef = useRef(null);
 
-  // Sempre que a aba mudar, posiciona a pill sobre o botão ativo
   useLayoutEffect(() => {
-    const idx = setores.findIndex(s => s.id === aba);
-    const btn = btnRefs.current[idx];
+    const idx  = setores.findIndex(s => s.id === aba);
+    const btn  = btnRefs.current[idx];
     const pill = pillRef.current;
     if (!btn || !pill) return;
     pill.style.left  = `${btn.offsetLeft}px`;
@@ -122,12 +194,7 @@ const SetorToggle = ({ aba, onChange, setores }) => {
   return (
     <div className="setor-toggle-wrap">
       <div className="setor-toggle">
-        {/* Pill deslizante */}
-        <div
-          ref={pillRef}
-          className={`toggle-pill toggle-pill--${aba}`}
-        />
-        {/* Botões */}
+        <div ref={pillRef} className={`toggle-pill toggle-pill--${aba}`} />
         {setores.map((s, i) => (
           <button
             key={s.id}
@@ -135,8 +202,11 @@ const SetorToggle = ({ aba, onChange, setores }) => {
             className={`toggle-btn toggle-btn--${s.id} ${aba === s.id ? 'ativo' : ''}`}
             onClick={() => onChange(s.id)}
           >
-            {s.icone}
-            {s.label}
+            <span className="toggle-btn-main">{s.icone}{s.label}</span>
+            {/* Subtotal parcial por setor */}
+            {totais[s.id] > 0 && (
+              <span className="toggle-sub">R$ {formatBRL(totais[s.id])}</span>
+            )}
           </button>
         ))}
       </div>
@@ -144,31 +214,149 @@ const SetorToggle = ({ aba, onChange, setores }) => {
   );
 };
 
-/* ===================================================================
+/* =====================================================================
+   MODAL DE CONFIRMAÇÃO
+===================================================================== */
+const Modal = ({ titulo, mensagem, onConfirmar, onCancelar }) => (
+  <div className="modal-overlay" onClick={onCancelar}>
+    <div className="modal-card" onClick={e => e.stopPropagation()}>
+      <p className="modal-titulo">{titulo}</p>
+      <p className="modal-sub">{mensagem}</p>
+      <div className="modal-btns">
+        <button className="btn btn-ghost" onClick={onCancelar}>Cancelar</button>
+        <button className="btn btn-confirmar" onClick={onConfirmar}>Confirmar</button>
+      </div>
+    </div>
+  </div>
+);
+
+/* =====================================================================
+   HISTÓRICO
+===================================================================== */
+const Historico = ({ historico, onSelecionar, onLimpar }) => {
+  if (historico.length === 0) return null;
+
+  return (
+    <div className="historico-wrap">
+      <p className="historico-titulo">
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <IconHistory /> Últimos fechamentos
+        </span>
+        <button className="btn-limpar-historico" onClick={onLimpar}>Limpar</button>
+      </p>
+      <div className="historico-lista">
+        {historico.map((item, i) => {
+          const ok = Math.abs(item.totalGeral) < 1;
+          return (
+            <button key={i} className="historico-item" onClick={() => onSelecionar(item)}>
+              <span className={`historico-dot ${ok ? 'historico-dot--ok' : 'historico-dot--alerta'}`} />
+              <span className="historico-data">{item.dataFechamento}</span>
+              <span className={`historico-total ${ok ? 'historico-total--ok' : 'historico-total--alerta'}`}>
+                R$ {formatBRL(item.totalGeral)}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* =====================================================================
+   HELPERS — DATA
+===================================================================== */
+const obterDataFechamento = () => {
+  const agora = new Date();
+  const hora  = agora.getHours();
+  const data  = hora < 17 ? new Date(agora.setDate(agora.getDate() - 1)) : agora;
+  return data.toLocaleDateString('pt-BR', {
+    weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric',
+  });
+};
+
+/* =====================================================================
    COMPONENTE PRINCIPAL
-=================================================================== */
+===================================================================== */
 const Fechamento = () => {
-  const [etapa,   setEtapa]   = useState('formulario');
-  const [aba,     setAba]     = useState('salao');
-  const [salao,   setSalao]   = useState({ vendaSist: 0, inicial: 0, maq: 0, din: 0, excedente: 0 });
-  const [delivery, setDelivery] = useState({ vendaWeb: 0, vendaBundi: 0, maqRetirada: 0 });
-  const [dadosMotoboys, setDadosMotoboys] = useState([
-    { nome: 'Entregador 1', qtd: 0, maq: 0, din: 0, gas: 0 },
-  ]);
+  const [etapa,    setEtapa]    = useState('formulario');
+  const [aba,      setAba]      = useState('salao');
+  const [salao,    setSalao]    = useState(SALAO_INICIAL);
+  const [delivery, setDelivery] = useState(DELIVERY_INICIAL);
+  const [dadosMotoboys, setDadosMotoboys] = useState(MOTOBOYS_INICIAL);
   const [relatorio, setRelatorio] = useState(null);
+  const [historico, setHistorico] = useState([]);
+  const [erros,     setErros]     = useState({});
   const [copiando,  setCopiando]  = useState(false);
   const [copiado,   setCopiado]   = useState(false);
+  const [modalNovoFechamento, setModalNovoFechamento] = useState(false);
+  const [modalLimparHistorico, setModalLimparHistorico] = useState(false);
+
+  // Touch / swipe
+  const touchStartX = useRef(null);
   const resultadoRef = useRef(null);
   const conteudoRef  = useRef(null);
 
-  // Lista de setores — adicione novos aqui para expandir
   const SETORES = [
     { id: 'salao',    label: 'Salão',    icone: <IconStore /> },
     { id: 'delivery', label: 'Delivery', icone: <IconBike />  },
-    // { id: 'balcao', label: 'Balcão', icone: <IconBalcao /> },
   ];
 
-  /* ----- handlers motoboy ----- */
+  /* ------------------------------------------------------------------
+     PERSISTÊNCIA — carrega rascunho e histórico ao montar
+  ------------------------------------------------------------------ */
+  useEffect(() => {
+    try {
+      const rascunho = localStorage.getItem(STORAGE_KEY);
+      if (rascunho) {
+        const d = JSON.parse(rascunho);
+        if (d.salao)         setSalao(d.salao);
+        if (d.delivery)      setDelivery(d.delivery);
+        if (d.dadosMotoboys) setDadosMotoboys(d.dadosMotoboys);
+      }
+    } catch { /* ignora erros de parse */ }
+
+    try {
+      const hist = localStorage.getItem(HISTORICO_KEY);
+      if (hist) setHistorico(JSON.parse(hist));
+    } catch { /* ignora */ }
+  }, []);
+
+  /* ------------------------------------------------------------------
+     PERSISTÊNCIA — salva rascunho sempre que os dados mudam
+  ------------------------------------------------------------------ */
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ salao, delivery, dadosMotoboys }));
+    } catch { /* storage cheio */ }
+  }, [salao, delivery, dadosMotoboys]);
+
+  /* ------------------------------------------------------------------
+     SUBTOTAIS PARA O TOGGLE
+  ------------------------------------------------------------------ */
+  const totaisToggle = {
+    salao: salao.maq + Math.max(0, salao.din - salao.inicial),
+    delivery: delivery.vendaWeb + delivery.vendaBundi + delivery.maqRetirada +
+              dadosMotoboys.reduce((a, m) => a + m.maq + m.din, 0),
+  };
+
+  /* ------------------------------------------------------------------
+     SWIPE (mobile) — troca aba arrastando
+  ------------------------------------------------------------------ */
+  const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) < 50) return; // limiar mínimo
+    const idx    = SETORES.findIndex(s => s.id === aba);
+    if (diff > 0 && idx < SETORES.length - 1) setAba(SETORES[idx + 1].id);
+    if (diff < 0 && idx > 0)                  setAba(SETORES[idx - 1].id);
+    touchStartX.current = null;
+  };
+
+  /* ------------------------------------------------------------------
+     MOTOBOY HANDLERS
+  ------------------------------------------------------------------ */
   const handleMotoboyChange = (index, campo, valor) => {
     setDadosMotoboys(prev => {
       const next = [...prev];
@@ -177,8 +365,29 @@ const Fechamento = () => {
     });
   };
 
-  /* ----- cálculo ----- */
+  /* ------------------------------------------------------------------
+     VALIDAÇÃO
+  ------------------------------------------------------------------ */
+  const validar = () => {
+    const novosErros = {};
+
+    if (!salao.vendaSist || salao.vendaSist <= 0)
+      novosErros.vendaSist = 'Informe as vendas do salão';
+
+    const totalDelivery = delivery.vendaWeb + delivery.vendaBundi;
+    if (totalDelivery <= 0)
+      novosErros.vendaDelivery = 'Informe ao menos uma venda de delivery';
+
+    setErros(novosErros);
+    return Object.keys(novosErros).length === 0;
+  };
+
+  /* ------------------------------------------------------------------
+     CÁLCULO
+  ------------------------------------------------------------------ */
   const calcularTudo = () => {
+    if (!validar()) return;
+
     const realSalao    = (salao.din - salao.inicial) + salao.maq;
     const difSalao     = (realSalao - salao.excedente) - salao.vendaSist;
     const sistDeliv    = delivery.vendaWeb + delivery.vendaBundi;
@@ -189,18 +398,30 @@ const Fechamento = () => {
     const realDeliv    = realDelivLiq + totalGasEnt;
     const difDeliv     = realDeliv - sistDeliv;
 
-    setRelatorio({
+    const novoRelatorio = {
       sistSalao: salao.vendaSist,
       realSalao, excedente: salao.excedente, difSalao,
       sistDeliv, realDelivLiq, totalGasEnt, difDeliv,
       totalGeral: difSalao + difDeliv,
       motoboys: dadosMotoboys,
       dataFechamento: obterDataFechamento(),
-    });
+      timestamp: Date.now(),
+    };
+
+    setRelatorio(novoRelatorio);
     setEtapa('resultado');
+
+    // Salva no histórico (máx MAX_HISTORICO itens)
+    setHistorico(prev => {
+      const atualizado = [novoRelatorio, ...prev].slice(0, MAX_HISTORICO);
+      try { localStorage.setItem(HISTORICO_KEY, JSON.stringify(atualizado)); } catch {}
+      return atualizado;
+    });
   };
 
-  /* ----- copiar como imagem ----- */
+  /* ------------------------------------------------------------------
+     COPIAR COMO IMAGEM
+  ------------------------------------------------------------------ */
   const copiarComoImagem = async () => {
     const elemento = conteudoRef.current;
     if (!elemento) return;
@@ -224,19 +445,37 @@ const Fechamento = () => {
     } catch { setCopiando(false); }
   };
 
-  /* ----- scroll para resultado ----- */
+  /* ------------------------------------------------------------------
+     NOVO FECHAMENTO (com confirmação)
+  ------------------------------------------------------------------ */
+  const confirmarNovoFechamento = () => {
+    setSalao(SALAO_INICIAL);
+    setDelivery(DELIVERY_INICIAL);
+    setDadosMotoboys(MOTOBOYS_INICIAL);
+    setRelatorio(null);
+    setErros({});
+    setEtapa('formulario');
+    setAba('salao');
+    setModalNovoFechamento(false);
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  };
+
+  /* ------------------------------------------------------------------
+     SCROLL PARA RESULTADO
+  ------------------------------------------------------------------ */
   useEffect(() => {
     if (etapa === 'resultado' && resultadoRef.current) {
       setTimeout(() => resultadoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     }
   }, [etapa]);
 
-  const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
+  const positivo  = relatorio && Math.abs(relatorio.totalGeral) < 1;
+  const abaIndex  = SETORES.findIndex(s => s.id === aba);
+  const temErros  = Object.keys(erros).length > 0;
 
-  /* ----- índice da aba ativa (para translateX) ----- */
-  const abaIndex = SETORES.findIndex(s => s.id === aba);
-  const trackClass = `setor-track--${aba}`;
-
+  /* ==================================================================
+     RENDER
+  ================================================================== */
   return (
     <div className="fc-root">
       <header className="fc-header">
@@ -246,25 +485,35 @@ const Fechamento = () => {
 
       <main className="fc-main">
 
-        {/* ========== FORMULÁRIO ========== */}
+        {/* ============================================================
+            FORMULÁRIO
+        ============================================================ */}
         {etapa === 'formulario' && (
           <div className="anima-fade" style={{ width: '100%' }}>
 
-            {/* Toggle pill centralizado */}
-            <SetorToggle aba={aba} onChange={setAba} setores={SETORES} />
+            {/* Toggle pill */}
+            <SetorToggle
+              aba={aba}
+              onChange={setAba}
+              setores={SETORES}
+              totais={totaisToggle}
+            />
 
-            {/* Viewport de slide */}
-            <div className="setor-viewport">
+            {/* Viewport com suporte a swipe */}
+            <div
+              className="setor-viewport"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               <div
                 className="setor-track"
                 style={{
-                  // Funciona para qualquer número de setores
                   width: `${SETORES.length * 100}%`,
                   transform: `translateX(-${(abaIndex * 100) / SETORES.length}%)`,
                 }}
               >
 
-                {/* SLIDE — SALÃO */}
+                {/* ---- SLIDE SALÃO ---- */}
                 <div className="setor-slide" style={{ width: `${100 / SETORES.length}%` }}>
                   <div className="fc-card fc-card--salao">
                     <div className="setor-header setor-header--salao">
@@ -273,29 +522,37 @@ const Fechamento = () => {
                     </div>
                     <div className="section-block">
                       <p className="section-label">Sistema</p>
-                      <Field label="Vendas totais (mesas)" value={salao.vendaSist}
-                        onChange={e => setSalao({ ...salao, vendaSist: Number(e.target.value) })} />
+                      <Field
+                        label="Vendas totais (mesas)"
+                        value={salao.vendaSist}
+                        error={erros.vendaSist}
+                        onChange={v => { setSalao(s => ({ ...s, vendaSist: v })); setErros(e => ({ ...e, vendaSist: null })); }}
+                      />
                     </div>
                     <div className="section-divider" />
                     <div className="section-block">
                       <p className="section-label">Caixa físico</p>
                       <Field label="Troco inicial" hint="valor que estava na gaveta ao abrir"
-                        value={salao.inicial} onChange={e => setSalao({ ...salao, inicial: Number(e.target.value) })} />
-                      <Field label="Maquininha" value={salao.maq}
-                        onChange={e => setSalao({ ...salao, maq: Number(e.target.value) })} />
-                      <Field label="Dinheiro na gaveta" value={salao.din}
-                        onChange={e => setSalao({ ...salao, din: Number(e.target.value) })} />
+                        value={salao.inicial}
+                        onChange={v => setSalao(s => ({ ...s, inicial: v }))} />
+                      <Field label="Maquininha"
+                        value={salao.maq}
+                        onChange={v => setSalao(s => ({ ...s, maq: v }))} />
+                      <Field label="Dinheiro na gaveta"
+                        value={salao.din}
+                        onChange={v => setSalao(s => ({ ...s, din: v }))} />
                     </div>
                     <div className="section-divider" />
                     <div className="section-block">
                       <p className="section-label">Deduções</p>
-                      <Field label="Excedente funcionários" value={salao.excedente}
-                        onChange={e => setSalao({ ...salao, excedente: Number(e.target.value) })} />
+                      <Field label="Excedente funcionários"
+                        value={salao.excedente}
+                        onChange={v => setSalao(s => ({ ...s, excedente: v }))} />
                     </div>
                   </div>
                 </div>
 
-                {/* SLIDE — DELIVERY */}
+                {/* ---- SLIDE DELIVERY ---- */}
                 <div className="setor-slide" style={{ width: `${100 / SETORES.length}%` }}>
                   <div className="fc-card fc-card--delivery">
                     <div className="setor-header setor-header--delivery">
@@ -304,16 +561,22 @@ const Fechamento = () => {
                     </div>
                     <div className="section-block">
                       <p className="section-label">Vendas online</p>
-                      <Field label="Web Cardápio" value={delivery.vendaWeb}
-                        onChange={e => setDelivery({ ...delivery, vendaWeb: Number(e.target.value) })} />
-                      <Field label="App Brendi" value={delivery.vendaBundi}
-                        onChange={e => setDelivery({ ...delivery, vendaBundi: Number(e.target.value) })} />
+                      <Field
+                        label="Web Cardápio"
+                        value={delivery.vendaWeb}
+                        error={erros.vendaDelivery}
+                        onChange={v => { setDelivery(d => ({ ...d, vendaWeb: v })); setErros(e => ({ ...e, vendaDelivery: null })); }}
+                      />
+                      <Field label="App Brendi"
+                        value={delivery.vendaBundi}
+                        onChange={v => setDelivery(d => ({ ...d, vendaBundi: v }))} />
                     </div>
                     <div className="section-divider" />
                     <div className="section-block">
                       <p className="section-label">Retirada no balcão</p>
-                      <Field label="Maquininha balcão" value={delivery.maqRetirada}
-                        onChange={e => setDelivery({ ...delivery, maqRetirada: Number(e.target.value) })} />
+                      <Field label="Maquininha balcão"
+                        value={delivery.maqRetirada}
+                        onChange={v => setDelivery(d => ({ ...d, maqRetirada: v }))} />
                     </div>
                     <div className="section-divider" />
                     <div className="section-block">
@@ -334,7 +597,10 @@ const Fechamento = () => {
                         <div key={i} className="motoboy-card">
                           <div className="motoboy-header">
                             <div className="motoboy-avatar">{m.nome.charAt(0).toUpperCase()}</div>
-                            <input type="text" className="motoboy-nome-input" value={m.nome}
+                            <input
+                              type="text"
+                              className="motoboy-nome-input"
+                              value={m.nome}
                               placeholder={`Entregador ${i + 1}`}
                               onChange={e => {
                                 setDadosMotoboys(prev => {
@@ -342,14 +608,19 @@ const Fechamento = () => {
                                   next[i] = { ...next[i], nome: e.target.value };
                                   return next;
                                 });
-                              }} />
+                              }}
+                            />
                           </div>
                           <div className="motoboy-fields">
                             {[['qtd','Entregas'],['maq','Maquininha'],['din','Dinheiro'],['gas','Gasolina']].map(([campo, lbl]) => (
                               <div key={campo} className="moto-field">
                                 <span className="moto-lbl">{lbl}</span>
-                                <input type="number" placeholder="0" value={m[campo] || ''}
-                                  onChange={e => handleMotoboyChange(i, campo, e.target.value)} />
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  value={m[campo] || ''}
+                                  onChange={e => handleMotoboyChange(i, campo, e.target.value)}
+                                />
                               </div>
                             ))}
                           </div>
@@ -359,24 +630,36 @@ const Fechamento = () => {
                   </div>
                 </div>
 
-                {/*
-                  ✅ PARA ADICIONAR NOVOS SETORES:
-                  1. Adicione { id: 'novoSetor', label: 'Nome', icone: <IconX /> } no array SETORES
-                  2. Copie um <div className="setor-slide"> abaixo e preencha os campos
-                  3. Adicione as variáveis CSS --novoSetor e --novoSetor-bg no :root
-                  O toggle e o slide se ajustam automaticamente.
-                */}
-
               </div>
             </div>
 
-            <button className="btn btn-calcular" onClick={calcularTudo}>
+            {/* Toast de validação */}
+            {temErros && (
+              <div className="validacao-toast">
+                <IconWarning />
+                {erros.vendaSist || erros.vendaDelivery}
+              </div>
+            )}
+
+            <button
+              className="btn btn-calcular"
+              onClick={calcularTudo}
+            >
               Calcular fechamento
             </button>
+
+            {/* Histórico de fechamentos anteriores */}
+            <Historico
+              historico={historico}
+              onSelecionar={(item) => { setRelatorio(item); setEtapa('resultado'); }}
+              onLimpar={() => setModalLimparHistorico(true)}
+            />
           </div>
         )}
 
-        {/* ========== RESULTADO ========== */}
+        {/* ============================================================
+            RESULTADO
+        ============================================================ */}
         {etapa === 'resultado' && relatorio && (
           <div ref={resultadoRef} className="anima-fade" style={{ width: '100%' }}>
             <div ref={conteudoRef} style={{ padding: '16px', background: '#0f172a', borderRadius: '14px' }}>
@@ -389,7 +672,7 @@ const Fechamento = () => {
                   <p className="banner-data">{relatorio.dataFechamento}</p>
                 </div>
                 <span className={`banner-valor ${positivo ? 'val--ok' : 'val--alerta'}`}>
-                  R$ {relatorio.totalGeral.toFixed(2)}
+                  R$ {formatBRL(relatorio.totalGeral)}
                 </span>
               </div>
 
@@ -431,7 +714,7 @@ const Fechamento = () => {
                           <div className="motoboy-avatar sm">{m.nome.charAt(0).toUpperCase()}</div>
                           <span className="motoboy-nome">{m.nome}</span>
                           <span className="motoboy-qtd">{m.qtd} entregas</span>
-                          <span className="motoboy-total">R$ {(m.maq + m.din + m.gas).toFixed(2)}</span>
+                          <span className="motoboy-total">R$ {formatBRL(m.maq + m.din + m.gas)}</span>
                         </div>
                       ))}
                     </>
@@ -453,10 +736,10 @@ const Fechamento = () => {
                   ? <>⏳ Gerando imagem...</>
                   : copiado
                     ? <><IconCheck /> Copiado!</>
-                    : <><IconCamera /> Copiar para WhatsApp</>
-                }
+                    : <><IconCamera /> Copiar para WhatsApp</>}
               </button>
-              <button className="btn btn-ghost btn-icon" onClick={() => window.location.reload()}>
+              {/* Botão novo fechamento — abre confirmação antes de limpar */}
+              <button className="btn btn-ghost btn-icon" onClick={() => setModalNovoFechamento(true)}>
                 <IconRefresh /> Novo fechamento
               </button>
             </div>
@@ -464,6 +747,31 @@ const Fechamento = () => {
         )}
 
       </main>
+
+      {/* ============================================================
+          MODAIS
+      ============================================================ */}
+      {modalNovoFechamento && (
+        <Modal
+          titulo="Iniciar novo fechamento?"
+          mensagem="Todos os valores preenchidos serão apagados. O fechamento atual já foi salvo no histórico."
+          onConfirmar={confirmarNovoFechamento}
+          onCancelar={() => setModalNovoFechamento(false)}
+        />
+      )}
+
+      {modalLimparHistorico && (
+        <Modal
+          titulo="Limpar histórico?"
+          mensagem="Todos os fechamentos anteriores serão removidos permanentemente."
+          onConfirmar={() => {
+            setHistorico([]);
+            try { localStorage.removeItem(HISTORICO_KEY); } catch {}
+            setModalLimparHistorico(false);
+          }}
+          onCancelar={() => setModalLimparHistorico(false)}
+        />
+      )}
     </div>
   );
 };
