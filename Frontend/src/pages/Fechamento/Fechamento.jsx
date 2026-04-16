@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from
 import "./fechamento.css";
 import logo from '/img/logo.png';
 import html2canvas from 'html2canvas';
+import { salvarFechamento } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 /* =====================================================================
    ÍCONES
@@ -290,6 +292,7 @@ const Fechamento = () => {
   const [copiado,   setCopiado]   = useState(false);
   const [modalNovoFechamento, setModalNovoFechamento] = useState(false);
   const [modalLimparHistorico, setModalLimparHistorico] = useState(false);
+  const { user } = useAuth();
 
   // Touch / swipe
   const touchStartX = useRef(null);
@@ -410,13 +413,11 @@ const Fechamento = () => {
 
     setRelatorio(novoRelatorio);
     setEtapa('resultado');
-
-    // Salva no histórico (máx MAX_HISTORICO itens)
-    setHistorico(prev => {
-      const atualizado = [novoRelatorio, ...prev].slice(0, MAX_HISTORICO);
-      try { localStorage.setItem(HISTORICO_KEY, JSON.stringify(atualizado)); } catch {}
-      return atualizado;
-    });
+    try {
+      await salvarFechamento(novoRelatorio, user.id);
+    } catch (e) {
+      console.error('Erro ao salvar fechamento:', e);
+    }
   };
 
   /* ------------------------------------------------------------------
