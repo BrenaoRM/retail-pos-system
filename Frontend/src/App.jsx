@@ -6,9 +6,10 @@ import {
 } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { logout } from './lib/api';
-import Login     from './pages/Login/Login';
-import Fechamento from './pages/Fechamento/Fechamento';
-import Plano     from './pages/Plano/Plano';
+import Login      from './pages/Login/Login';
+import Fechamento  from './pages/Fechamento/Fechamento';
+import Historico   from './pages/Historico/Historico';
+import Plano       from './pages/Plano/Plano';
 
 // ── Guarda de rota ────────────────────────────────────────────
 function RotaProtegida({ children }) {
@@ -63,8 +64,9 @@ function Navbar() {
       </span>
 
       {[
-        { path: '/',      label: 'Caixa' },
-        { path: '/plano', label: planoAtivo ? '⭐ Pro' : 'Plano' },
+        { path: '/',          label: 'Caixa'    },
+        { path: '/historico', label: 'Histórico' },
+        { path: '/plano',     label: planoAtivo ? '⭐ Pro' : 'Plano' },
       ].map(({ path, label }) => (
         <button key={path} onClick={() => navigate(path)} style={{
           background:   ativo(path) ? 'rgba(96,165,250,0.12)' : 'transparent',
@@ -115,6 +117,9 @@ function AppInner() {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={
           <GuardaPlano><Fechamento /></GuardaPlano>
+        } />
+        <Route path="/historico" element={
+          <GuardaPlano><Historico /></GuardaPlano>
         } />
         <Route path="/plano" element={
           <RotaProtegida><Plano /></RotaProtegida>

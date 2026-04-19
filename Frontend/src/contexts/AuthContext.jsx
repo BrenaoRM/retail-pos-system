@@ -5,20 +5,26 @@ import { supabase } from '../lib/supabaseClient';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(null);
-  const [perfil,  setPerfil]  = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user,         setUser]         = useState(null);
+  const [perfil,       setPerfil]       = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  // perfilLoading controla separadamente o carregamento do perfil
+  // para evitar que o app renderize antes de saber o plano do usuário
+  const [perfilLoading, setPerfilLoading] = useState(false);
 
-  // Carrega perfil via Edge Function (sem acesso direto ao banco)
   async function carregarPerfil(sessionUser) {
     if (!sessionUser) { setPerfil(null); return; }
+    setPerfilLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('perfil', {
         body: { action: 'get' },
       });
       if (!error) setPerfil(data);
+      else setPerfil(null);
     } catch {
       setPerfil(null);
+    } finally {
+      setPerfilLoading(false);
     }
   }
 
@@ -39,7 +45,8 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     perfil,
-    loading,
+    // loading = true enquanto a sessão E o perfil ainda não foram resolvidos
+    loading: loading || perfilLoading,
     isAdmin:    perfil?.perfil === 'admin',
     planoAtivo: perfil?.plano_ativo === true,
     recarregarPerfil: () => carregarPerfil(user),
