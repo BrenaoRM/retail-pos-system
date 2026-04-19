@@ -73,3 +73,13 @@ export async function criarFechamento(payload) {
 export async function listarFechamentos({ pagina = 0, limite = 20 } = {}) {
   return callFunction('fechamentos', { action: 'listar', pagina, limite });
 }
+
+// ── Mercado Pago ──────────────────────────────────────────────
+
+/**
+ * Cria uma preferência de pagamento no Mercado Pago
+ * e retorna o link de checkout (init_point).
+ */
+export async function criarPreferenciaMp({ titulo, preco, userId, userEmail }) {
+  return callFunction('criar-preferencia-mp', { titulo, preco, userId, userEmail });
+}
