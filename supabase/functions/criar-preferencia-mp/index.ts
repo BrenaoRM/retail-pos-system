@@ -8,24 +8,23 @@ const corsHeaders = {
 }
 
 serve(async (req: Request) => {
-  // Preflight CORS
+  console.log('[criar-preferencia-mp] requisição recebida, método:', req.method)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // Lê secrets DENTRO do handler (obrigatório no Deno Edge)
   const MP_ACCESS_TOKEN = Deno.env.get('MP_ACCESS_TOKEN')
   const BASE_URL        = Deno.env.get('APP_BASE_URL')
   const SUPABASE_URL    = Deno.env.get('SUPABASE_URL')
 
-  console.log('[criar-preferencia-mp] boot OK')
   console.log('MP_ACCESS_TOKEN presente:', !!MP_ACCESS_TOKEN)
   console.log('APP_BASE_URL:', BASE_URL)
 
   if (!MP_ACCESS_TOKEN) {
     console.error('ERRO: MP_ACCESS_TOKEN ausente')
     return new Response(
-      JSON.stringify({ error: 'MP_ACCESS_TOKEN não configurado nos secrets do Supabase.' }),
+      JSON.stringify({ error: 'MP_ACCESS_TOKEN não configurado.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
@@ -33,25 +32,48 @@ serve(async (req: Request) => {
   if (!BASE_URL) {
     console.error('ERRO: APP_BASE_URL ausente')
     return new Response(
-      JSON.stringify({ error: 'APP_BASE_URL não configurado nos secrets do Supabase.' }),
+      JSON.stringify({ error: 'APP_BASE_URL não configurado.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 
+  // ── Lê o body de forma segura — supabase.functions.invoke pode
+  //    enviar como texto ou como JSON dependendo da versão do SDK ──────
+  let titulo: string | undefined
+  let preco: number | undefined
+  let userId: string | undefined
+  let userEmail: string | undefined
+
   try {
-    const body = await req.json()
-    console.log('Body recebido:', JSON.stringify(body))
+    const rawText = await req.text()
+    console.log('Body raw recebido:', rawText)
 
-    const { titulo, preco, userId, userEmail } = body
-
-    if (!userId || !preco) {
-      return new Response(
-        JSON.stringify({ error: 'userId e preco são obrigatórios' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+    if (rawText && rawText.trim() !== '') {
+      const parsed = JSON.parse(rawText)
+      titulo    = parsed.titulo
+      preco     = parsed.preco
+      userId    = parsed.userId
+      userEmail = parsed.userEmail
     }
+  } catch (parseErr) {
+    console.error('Erro ao fazer parse do body:', parseErr.message)
+    return new Response(
+      JSON.stringify({ error: 'Body inválido: ' + parseErr.message }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
 
-    // URLs de retorno — aponta para mp-redirect.html que redireciona para o hash correto
+  console.log('Dados extraídos — userId:', userId, '| preco:', preco, '| email:', userEmail)
+
+  if (!userId || !preco) {
+    console.error('userId ou preco ausentes')
+    return new Response(
+      JSON.stringify({ error: 'userId e preco são obrigatórios' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  try {
     const successUrl = `${BASE_URL}/mp-redirect.html?mp_status=approved&external_reference=${userId}`
     const failureUrl = `${BASE_URL}/mp-redirect.html?mp_status=failure&external_reference=${userId}`
     const pendingUrl = `${BASE_URL}/mp-redirect.html?mp_status=pending&external_reference=${userId}`
@@ -69,9 +91,7 @@ serve(async (req: Request) => {
           unit_price:  Number(preco),
         },
       ],
-      payer: {
-        ...(userEmail ? { email: userEmail } : {}),
-      },
+      ...(userEmail ? { payer: { email: userEmail } } : {}),
       back_urls: {
         success: successUrl,
         failure: failureUrl,
@@ -88,7 +108,7 @@ serve(async (req: Request) => {
       statement_descriptor: 'BIGBURGUER PRO',
     }
 
-    console.log('Chamando API do Mercado Pago...')
+    console.log('Chamando API Mercado Pago...')
 
     const resposta = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method:  'POST',
@@ -100,12 +120,14 @@ serve(async (req: Request) => {
     })
 
     const dados = await resposta.json()
-    console.log('MP status HTTP:', resposta.status)
+    console.log('MP HTTP status:', resposta.status)
     console.log('MP resposta:', JSON.stringify(dados))
 
     if (!resposta.ok) {
-      throw new Error(`Mercado Pago erro ${resposta.status}: ${JSON.stringify(dados)}`)
+      throw new Error(`Mercado Pago ${resposta.status}: ${JSON.stringify(dados)}`)
     }
+
+    console.log('Preferência criada! init_point:', dados.init_point)
 
     return new Response(
       JSON.stringify({
@@ -117,7 +139,7 @@ serve(async (req: Request) => {
     )
 
   } catch (err) {
-    console.error('ERRO GERAL:', err.message)
+    console.error('ERRO ao criar preferência:', err.message)
     return new Response(
       JSON.stringify({ error: err.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
