@@ -1,36 +1,33 @@
 // src/contexts/AuthContext.jsx
-// ─────────────────────────────────────────────────────────────────────
-// Provê { user, perfil, loading, isAdmin, isGerente } para toda a app.
-// Envolva <App> com <AuthProvider> no main.jsx.
-// ─────────────────────────────────────────────────────────────────────
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, getPerfil } from '../lib/supabase';
+import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user,    setUser]    = useState(null);
   const [perfil,  setPerfil]  = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const carregarPerfil = async (sessaoUser) => {
-    if (!sessaoUser) { setPerfil(null); return; }
+  // Carrega perfil via Edge Function (sem acesso direto ao banco)
+  async function carregarPerfil(sessionUser) {
+    if (!sessionUser) { setPerfil(null); return; }
     try {
-      const p = await getPerfil();
-      setPerfil(p);
+      const { data, error } = await supabase.functions.invoke('perfil', {
+        body: { action: 'get' },
+      });
+      if (!error) setPerfil(data);
     } catch {
       setPerfil(null);
     }
-  };
+  }
 
   useEffect(() => {
-    // Sessão inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       carregarPerfil(session?.user).finally(() => setLoading(false));
     });
 
-    // Escuta mudanças de sessão (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       carregarPerfil(session?.user);
@@ -44,21 +41,15 @@ export const AuthProvider = ({ children }) => {
     perfil,
     loading,
     isAdmin:    perfil?.perfil === 'admin',
-    isGerente:  perfil?.perfil === 'gerente',
-    isFuncionario: perfil?.perfil === 'funcionario',
     planoAtivo: perfil?.plano_ativo === true,
     recarregarPerfil: () => carregarPerfil(user),
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
 
-export const useAuth = () => {
+export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth deve ser usado dentro de <AuthProvider>');
+  if (!ctx) throw new Error('useAuth deve estar dentro de <AuthProvider>');
   return ctx;
-};
+}
