@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<!--
+  frontend/public/mp-redirect.html
+  
+  O Mercado Pago não aceita URLs com # (hash) nas back_urls.
+  Então ele redireciona para:
+    https://brenao28.github.io/Big-Burguer/mp-redirect.html?mp_status=approved&external_reference=UUID
+  
+  Este arquivo lê esses params e redireciona para a rota correta
+  do HashRouter dentro do React:
+    https://brenao28.github.io/Big-Burguer/#/plano?status=approved&external_reference=UUID
+-->
+<!html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecionando...</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Inter, system-ui, sans-serif;
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <p>Redirecionando...</p>
+  <script>
+    (function () {
+      var p      = new URLSearchParams(window.location.search);
+      var status = p.get('mp_status') || 'failure';
+      var ref    = p.get('external_reference') || '';
+
+      // Monta a URL de destino no formato do HashRouter
+      var destino =
+        '/Big-Burguer/#/plano?status=' +
+        encodeURIComponent(status) +
+        '&external_reference=' +
+        encodeURIComponent(ref);
+
+      window.location.replace(destino);
+    })();
+  </script>
+</body>
+</html>
