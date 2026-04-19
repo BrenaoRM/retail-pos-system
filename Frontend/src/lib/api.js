@@ -32,11 +32,14 @@ export async function login(email, senha) {
 }
 
 /** Criar conta nova */
-export async function registrar(email, senha, nome) {
+export async function registrar(email, password, nome) {
   const { data, error } = await supabase.auth.signUp({
     email,
-    password: senha,
-    options: { data: { nome } },
+    password,
+    options: {
+      data: { nome },
+      emailRedirectTo: 'https://brenao28.github.io/Big-Burguer/#/login',
+    },
   });
   if (error) throw error;
   return data;
