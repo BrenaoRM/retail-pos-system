@@ -388,7 +388,7 @@ const Fechamento = () => {
   /* ------------------------------------------------------------------
      CÁLCULO
   ------------------------------------------------------------------ */
-  const calcularTudo = () => {
+  const calcularTudo = async () => {
     if (!validar()) return;
 
     const realSalao    = (salao.din - salao.inicial) + salao.maq;
