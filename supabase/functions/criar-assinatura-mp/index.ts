@@ -50,23 +50,23 @@ serve(async (req: Request) => {
     inicioCobranca.setDate(inicioCobranca.getDate() + 30)
 
     const assinatura = {
-      reason:           'Big Burguer Pro — Mensal',
+      reason: 'Big Burguer Pro — Mensal',
       auto_recurring: {
-        frequency:       1,
+        frequency: 1,
         frequency_type: 'months',
         transaction_amount: 79.90,
-        currency_id:    'BRL',
-        // Trial de 30 dias grátis
+        currency_id: 'BRL',
         free_trial: {
-          frequency:      1,
+          frequency: 1,
           frequency_type: 'months',
         },
       },
-      payer_email:        userEmail,
+      payer_email: userEmail,
       external_reference: userId,
-      back_url:           `${Deno.env.get('APP_BASE_URL')}/#/plano`,
-      // O webhook receberá os eventos de cobrança
-      notification_url:   `${SUPABASE_URL}/functions/v1/mp-webhook`,
+      back_url: `${Deno.env.get('APP_BASE_URL')}/#/plano`,
+      notification_url: `${SUPABASE_URL}/functions/v1/mp-webhook`,
+      // ✅ Adicione isso:
+      start_date: new Date().toISOString(),
     }
 
     console.log('[criar-assinatura-mp] criando assinatura para:', userEmail)
