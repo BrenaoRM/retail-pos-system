@@ -83,3 +83,15 @@ export async function listarFechamentos({ pagina = 0, limite = 20 } = {}) {
 export async function criarPreferenciaMp({ titulo, preco, userId, userEmail }) {
   return callFunction('criar-preferencia-mp', { titulo, preco, userId, userEmail });
 }
+
+// ── Mercado Pago — Assinatura ─────────────────────────────────
+// Adicione este trecho no FINAL do arquivo src/lib/api.js
+ 
+/**
+ * Cria uma assinatura recorrente mensal no Mercado Pago
+ * com trial gratuito de 30 dias.
+ * Retorna { init_point, assinatura_id, status }
+ */
+export async function criarAssinaturaMp({ userId, userEmail }) {
+  return callFunction('criar-assinatura-mp', { userId, userEmail });
+}
