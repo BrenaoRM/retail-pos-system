@@ -89,7 +89,7 @@
 }
 .calc-nota-linha {
   display: grid;
-  grid-template-columns: 62px 1fr 82px;
+  grid-template-columns: 60px 92px 1fr;
   align-items: center;
   gap: 6px;
   padding: 6px 2px;
@@ -107,23 +107,55 @@
   border-color: rgba(251, 146, 60, 0.18);
   color: #fdba74;
 }
-.calc-nota-qtd { display: flex; align-items: center; gap: 4px; }
+.calc-nota-qtd {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  justify-content: center;
+}
 .calc-nota-btn {
-  width: 24px; height: 24px; border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
-  color: #cbd5e1; font-size: 0.95rem; font-weight: 700;
-  line-height: 1; cursor: pointer; font-family: inherit;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
   transition: background 0.12s;
+  flex-shrink: 0;
 }
 .calc-nota-btn:hover { background: rgba(255, 255, 255, 0.1); }
 .calc-nota-btn:active { transform: translateY(1px); }
+.calc-nota-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.calc-nota-btn:active { transform: translateY(1px); }
 .calc-nota-input {
-  flex: 1; min-width: 0; height: 28px; padding: 0 6px;
-  border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.3); color: #e2e8f0;
-  font-family: inherit; font-size: 0.82rem; font-weight: 600;
-  text-align: center; -moz-appearance: textfield;
+  width: 40px;
+  min-width: 0;
+  height: 26px;
+  padding: 0 2px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.3);
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  -moz-appearance: textfield;
+  flex: 0 0 40px;
+}
+.calc-nota-input::-webkit-outer-spin-button,
+.calc-nota-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.calc-nota-input:focus {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.5);
 }
 .calc-nota-input::-webkit-outer-spin-button,
 .calc-nota-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
