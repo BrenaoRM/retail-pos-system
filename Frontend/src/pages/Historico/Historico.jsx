@@ -1,10 +1,9 @@
 // src/pages/Historico/Historico.jsx
 import React, { useState, useEffect } from 'react';
 import { listarFechamentos } from '../../lib/api';
+import { fmt } from '../../lib/format';
 import { useAuth } from '../../contexts/AuthContext';
 import './Historico.css';
-
-const fmt = (v) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // ── Skeleton ──────────────────────────────────────────────────
 function SkeletonLista() {
