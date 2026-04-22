@@ -1,7 +1,7 @@
 // src/pages/Fechamento/Fechamento.jsx
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect, useContext, useCallback } from 'react';
 import { criarFechamento } from '../../lib/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { ToastContext } from '../../App';
 import './Fechamento.css';
 
 // ── Ícones ────────────────────────────────────────────────────
@@ -42,11 +42,10 @@ const IconCamera = () => (
   </svg>
 );
 
-// ── Helpers de moeda ──────────────────────────────────────────
-const fmt = (v) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// ── Helpers ───────────────────────────────────────────────────
+const fmt   = (v) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const parse = (s) => parseFloat(String(s || '').replace(/\./g, '').replace(',', '.')) || 0;
 
-// ── Data de referência ────────────────────────────────────────
 function dataReferencia() {
   const agora = new Date();
   const base  = agora.getHours() < 17 ? new Date(agora.setDate(agora.getDate() - 1)) : agora;
@@ -70,7 +69,7 @@ function carregarRascunho() {
   } catch { return null; }
 }
 
-// ── Campo monetário ───────────────────────────────────────────
+// ── Campo monetário com foco animado ─────────────────────────
 function Campo({ label, hint, value, onChange, erro }) {
   const [focused, setFocused] = useState(false);
   const [display, setDisplay] = useState('');
@@ -85,7 +84,7 @@ function Campo({ label, hint, value, onChange, erro }) {
         {label}
         {hint && <span className="campo-hint">{hint}</span>}
       </label>
-      <div className={`campo-input ${erro ? 'campo-input--erro' : ''}`}>
+      <div className={`campo-input ${erro ? 'campo-input--erro' : ''} ${focused ? 'campo-input--focused' : ''}`}>
         <span className="campo-prefix">R$</span>
         <input
           type="text"
@@ -98,6 +97,28 @@ function Campo({ label, hint, value, onChange, erro }) {
         />
       </div>
       {erro && <span className="campo-erro">{erro}</span>}
+    </div>
+  );
+}
+
+// ── Calc auto com flash ao mudar ──────────────────────────────
+function CalcAuto({ label, value }) {
+  const [flash, setFlash] = useState(false);
+  const prevRef = useRef(value);
+
+  useEffect(() => {
+    if (prevRef.current !== value) {
+      setFlash(true);
+      const t = setTimeout(() => setFlash(false), 500);
+      prevRef.current = value;
+      return () => clearTimeout(t);
+    }
+  }, [value]);
+
+  return (
+    <div className={`fc-calc-auto ${flash ? 'fc-calc-auto--flash' : ''}`}>
+      <span className="fc-calc-label">{label}</span>
+      <span className="fc-calc-valor">R$ {fmt(Math.max(0, value))}</span>
     </div>
   );
 }
@@ -119,8 +140,8 @@ const ABAS = [
 ];
 
 function ToggleAbas({ aba, onChange, subtotais }) {
-  const refs  = useRef([]);
-  const pill  = useRef(null);
+  const refs = useRef([]);
+  const pill = useRef(null);
 
   useLayoutEffect(() => {
     const idx = ABAS.findIndex(a => a.id === aba);
@@ -169,28 +190,24 @@ function Modal({ titulo, mensagem, onConfirmar, onCancelar }) {
 
 // ── Componente principal ──────────────────────────────────────
 export default function Fechamento() {
-  
-
-  // Carrega rascunho salvo (evita reset ao Alt+Tab)
+  const toast = useContext(ToastContext);
   const rascunho = carregarRascunho();
 
-  const [etapa,        setEtapa]        = useState('formulario');
-  const [aba,          setAba]          = useState('salao');
-  const [salao,        setSalao]        = useState(rascunho?.salao    || SALAO_VAZIO);
-  const [delivery,     setDelivery]     = useState(rascunho?.delivery || DELIVERY_VAZIO);
-  const [motoboys,     setMotoboys]     = useState(rascunho?.motoboys || [MOTOBOY_NOVO(1)]);
-  const [brendiAtivo,  setBrendiAtivo]  = useState('A'); // 'A' = Açaí | 'B' = Pizza/Hamburguer
-  const [relatorio,    setRelatorio]    = useState(null);
-  const [erros,        setErros]        = useState({});
-  const [salvando,     setSalvando]     = useState(false);
-  const [erroSalvar,   setErroSalvar]   = useState('');
-  const [copiando,     setCopiando]     = useState(false);
-  const [copiado,      setCopiado]      = useState(false);
+  const [etapa,         setEtapa]         = useState('formulario');
+  const [aba,           setAba]           = useState('salao');
+  const [salao,         setSalao]         = useState(rascunho?.salao    || SALAO_VAZIO);
+  const [delivery,      setDelivery]      = useState(rascunho?.delivery || DELIVERY_VAZIO);
+  const [motoboys,      setMotoboys]      = useState(rascunho?.motoboys || [MOTOBOY_NOVO(1)]);
+  const [brendiAtivo,   setBrendiAtivo]   = useState('A');
+  const [relatorio,     setRelatorio]     = useState(null);
+  const [erros,         setErros]         = useState({});
+  const [copiando,      setCopiando]      = useState(false);
+  const [copiado,       setCopiado]       = useState(false);
   const [confirmarNovo, setConfirmarNovo] = useState(false);
 
-  const toque         = useRef(null);
-  const resultadoRef  = useRef(null);
-  const conteudoRef   = useRef(null);
+  const toque        = useRef(null);
+  const resultadoRef = useRef(null);
+  const conteudoRef  = useRef(null);
 
   // Subtotais para o toggle
   const subtotais = {
@@ -200,21 +217,16 @@ export default function Fechamento() {
             + (delivery.vendaBundiB - delivery.pixBundiB),
   };
 
-  // Scroll ao resultado
   useEffect(() => {
     if (etapa === 'resultado' && resultadoRef.current) {
       setTimeout(() => resultadoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     }
   }, [etapa]);
 
-  // Auto-salvar rascunho no sessionStorage
   useEffect(() => {
-    if (etapa === 'formulario') {
-      salvarRascunho({ salao, delivery, motoboys });
-    }
+    if (etapa === 'formulario') salvarRascunho({ salao, delivery, motoboys });
   }, [salao, delivery, motoboys, etapa]);
 
-  // Swipe mobile entre abas
   function onTouchStart(e) { toque.current = e.touches[0].clientX; }
   function onTouchEnd(e) {
     if (!toque.current) return;
@@ -226,7 +238,6 @@ export default function Fechamento() {
     toque.current = null;
   }
 
-  // Motoboy
   function editarMotoboy(i, campo, val) {
     setMotoboys(prev => {
       const next = [...prev];
@@ -237,7 +248,6 @@ export default function Fechamento() {
   function addMotoboy()    { setMotoboys(p => [...p, MOTOBOY_NOVO(p.length + 1)]); }
   function removeMotoboy() { setMotoboys(p => p.length > 1 ? p.slice(0, -1) : p); }
 
-  // Validação
   function validar() {
     const e = {};
     if (!salao.vendaSist || salao.vendaSist <= 0)
@@ -248,63 +258,51 @@ export default function Fechamento() {
     return Object.keys(e).length === 0;
   }
 
-  // Calcular + salvar
   async function calcular() {
     if (!validar()) return;
 
-    // ── Salão ──
     const pixRetiradaAuto  = salao.vendaRetirada - salao.pixRetirada;
     const totalVendasSalao = salao.vendaSist + pixRetiradaAuto;
     const realSalao        = (salao.din - salao.inicial) + salao.maq + salao.maqRetirada + salao.excedente;
     const difSalao         = realSalao - totalVendasSalao;
 
-    // ── Delivery ──
-    const pixWebAuto    = delivery.vendaWeb   - delivery.pixWeb;    // web sem pix auto
-    const pixBundiAAuto = delivery.vendaBundiA - delivery.pixBundiA; // açaí sem pix auto
-    const pixBundiBAuto = delivery.vendaBundiB - delivery.pixBundiB; // pizza sem pix auto
-    const sistDeliv     = pixWebAuto + pixBundiAAuto + pixBundiBAuto; // total esperado
-
+    const pixWebAuto    = delivery.vendaWeb    - delivery.pixWeb;
+    const pixBundiAAuto = delivery.vendaBundiA - delivery.pixBundiA;
+    const pixBundiBAuto = delivery.vendaBundiB - delivery.pixBundiB;
+    const sistDeliv     = pixWebAuto + pixBundiAAuto + pixBundiBAuto;
     const totalMaq      = motoboys.reduce((s, m) => s + m.maq, 0);
     const totalDin      = motoboys.reduce((s, m) => s + m.din, 0);
     const totalGas      = motoboys.reduce((s, m) => s + m.gas, 0);
-    const realDelivLiq  = totalMaq + totalDin + totalGas;            // total recebido
+    const realDelivLiq  = totalMaq + totalDin + totalGas;
     const difDeliv      = realDelivLiq - sistDeliv;
 
     const dados = {
-      // Salão
       sistSalao: salao.vendaSist, realSalao, excedente: salao.excedente, difSalao,
       totalVendasSalao, pixRetiradaAuto,
       vendaRetirada: salao.vendaRetirada, pixRetirada: salao.pixRetirada,
       maqRetirada: salao.maqRetirada,
-      // Delivery
       vendaWeb: delivery.vendaWeb, pixWeb: delivery.pixWeb, pixWebAuto,
       vendaBundiA: delivery.vendaBundiA, pixBundiA: delivery.pixBundiA, pixBundiAAuto,
       vendaBundiB: delivery.vendaBundiB, pixBundiB: delivery.pixBundiB, pixBundiBAuto,
       sistDeliv, realDelivLiq, totalGasEnt: totalGas, difDeliv,
-      // Geral
       totalGeral: difSalao + difDeliv,
       dataFechamento: dataReferencia(),
       motoboys,
-      // Campos originais para salvar no banco
       trocoInicial: salao.inicial, maqSalao: salao.maq, dinheiroGaveta: salao.din,
     };
 
     setRelatorio(dados);
     setEtapa('resultado');
 
-    // Salva via backend
-    setSalvando(true); setErroSalvar('');
+    // Salva silenciosamente e notifica via toast
     try {
       await criarFechamento(dados);
-    } catch (e) {
-      setErroSalvar('Não foi possível salvar no servidor. Os dados estão visíveis mas tente novamente.');
-      console.error(e);
-    } finally {
-      setSalvando(false);
+      toast?.('Fechamento salvo com sucesso!', 'ok');
+    } catch {
+      toast?.('Não foi possível salvar no servidor.', 'erro');
     }
   }
 
-  // Copiar como imagem
   async function copiarImagem() {
     const el = conteudoRef.current;
     if (!el) return;
@@ -315,7 +313,9 @@ export default function Fechamento() {
       canvas.toBlob(async (blob) => {
         try {
           await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-          setCopiado(true); setTimeout(() => setCopiado(false), 3000);
+          setCopiado(true);
+          toast?.('Imagem copiada!', 'ok');
+          setTimeout(() => setCopiado(false), 3000);
         } catch {
           const url = URL.createObjectURL(blob);
           Object.assign(document.createElement('a'), { href: url, download: 'fechamento.png' }).click();
@@ -325,25 +325,21 @@ export default function Fechamento() {
     } catch { setCopiando(false); }
   }
 
-  // Novo fechamento
   function novoFechamento() {
     setSalao(SALAO_VAZIO); setDelivery(DELIVERY_VAZIO);
     setMotoboys([MOTOBOY_NOVO(1)]); setRelatorio(null);
     setErros({}); setEtapa('formulario'); setAba('salao');
-    setConfirmarNovo(false); setErroSalvar('');
+    setConfirmarNovo(false);
     try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
   }
 
   const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
 
-  // ── Render ─────────────────────────────────────────────────
   return (
     <div className="fc-root">
       <main className="fc-main">
 
-        {/* ══════════════════════════════════════════════════════
-            FORMULÁRIO
-        ══════════════════════════════════════════════════════ */}
+        {/* ── FORMULÁRIO ── */}
         {etapa === 'formulario' && (
           <div className="fc-fade">
             <ToggleAbas aba={aba} onChange={setAba} subtotais={subtotais} />
@@ -353,7 +349,6 @@ export default function Fechamento() {
                 className="fc-track"
                 style={{ transform: `translateX(-${ABAS.findIndex(a => a.id === aba) * 50}%)` }}
               >
-
                 {/* ── Salão ── */}
                 <div className="fc-slide">
                   <div className="fc-card fc-card--salao">
@@ -375,10 +370,7 @@ export default function Fechamento() {
                         onChange={v => setSalao(s => ({ ...s, din: v }))} />
                       <Campo label="Troco inicial" hint="valor na gaveta ao abrir caixa" value={salao.inicial}
                         onChange={v => setSalao(s => ({ ...s, inicial: v }))} />
-                      <div className="fc-calc-auto">
-                        <span className="fc-calc-label">Valor bruto</span>
-                        <span className="fc-calc-valor">R$ {fmt(Math.max(0, salao.din - salao.inicial))}</span>
-                      </div>
+                      <CalcAuto label="Valor bruto" value={salao.din - salao.inicial} />
                       <Campo label="Maquininha" value={salao.maq}
                         onChange={v => setSalao(s => ({ ...s, maq: v }))} />
                     </div>
@@ -389,12 +381,9 @@ export default function Fechamento() {
                       <span className="fc-secao-label">Vendas retirada</span>
                       <Campo label="Venda total" value={salao.vendaRetirada}
                         onChange={v => setSalao(s => ({ ...s, vendaRetirada: v }))} />
-                      <Campo label="Venda em pix automatico" value={salao.pixRetirada}
+                      <Campo label="Venda em pix automático" value={salao.pixRetirada}
                         onChange={v => setSalao(s => ({ ...s, pixRetirada: v }))} />
-                      <div className="fc-calc-auto">
-                        <span className="fc-calc-label">Valor sem pix automatico</span>
-                        <span className="fc-calc-valor">R$ {fmt(Math.max(0, salao.vendaRetirada - salao.pixRetirada))}</span>
-                      </div>
+                      <CalcAuto label="Valor sem pix automático" value={salao.vendaRetirada - salao.pixRetirada} />
                       <Campo label="Maquininha" value={salao.maqRetirada}
                         onChange={v => setSalao(s => ({ ...s, maqRetirada: v }))} />
                     </div>
@@ -422,10 +411,7 @@ export default function Fechamento() {
                         onChange={v => { setDelivery(d => ({ ...d, vendaWeb: v })); setErros(e => ({ ...e, vendaDelivery: null })); }} />
                       <Campo label="Valor em pix automático" value={delivery.pixWeb}
                         onChange={v => setDelivery(d => ({ ...d, pixWeb: v }))} />
-                      <div className="fc-calc-auto">
-                        <span className="fc-calc-label">Valor sem pix automático</span>
-                        <span className="fc-calc-valor">R$ {fmt(Math.max(0, delivery.vendaWeb - delivery.pixWeb))}</span>
-                      </div>
+                      <CalcAuto label="Valor sem pix automático" value={delivery.vendaWeb - delivery.pixWeb} />
                     </div>
 
                     <div className="fc-divider" />
@@ -434,14 +420,10 @@ export default function Fechamento() {
                       <div className="brendi-toggle-wrap">
                         <span className="fc-secao-label" style={{ marginBottom: 0 }}>App Brendi</span>
                         <div className="brendi-toggle">
-                          <button
-                            className={`brendi-btn ${brendiAtivo === 'A' ? 'brendi-btn--ativo' : ''}`}
-                            onClick={() => setBrendiAtivo('A')}
-                          >🍦 Açaí</button>
-                          <button
-                            className={`brendi-btn ${brendiAtivo === 'B' ? 'brendi-btn--ativo' : ''}`}
-                            onClick={() => setBrendiAtivo('B')}
-                          >🍕 Pizza / Hamburguer</button>
+                          <button className={`brendi-btn ${brendiAtivo === 'A' ? 'brendi-btn--ativo' : ''}`}
+                            onClick={() => setBrendiAtivo('A')}>🍦 Açaí</button>
+                          <button className={`brendi-btn ${brendiAtivo === 'B' ? 'brendi-btn--ativo' : ''}`}
+                            onClick={() => setBrendiAtivo('B')}>🍕 Pizza / Hamburguer</button>
                         </div>
                       </div>
 
@@ -451,10 +433,7 @@ export default function Fechamento() {
                             onChange={v => setDelivery(d => ({ ...d, vendaBundiA: v }))} />
                           <Campo label="Valor em pix automático" value={delivery.pixBundiA}
                             onChange={v => setDelivery(d => ({ ...d, pixBundiA: v }))} />
-                          <div className="fc-calc-auto">
-                            <span className="fc-calc-label">Valor sem pix automático</span>
-                            <span className="fc-calc-valor">R$ {fmt(Math.max(0, delivery.vendaBundiA - delivery.pixBundiA))}</span>
-                          </div>
+                          <CalcAuto label="Valor sem pix automático" value={delivery.vendaBundiA - delivery.pixBundiA} />
                         </>
                       ) : (
                         <>
@@ -462,10 +441,7 @@ export default function Fechamento() {
                             onChange={v => setDelivery(d => ({ ...d, vendaBundiB: v }))} />
                           <Campo label="Valor em pix automático" value={delivery.pixBundiB}
                             onChange={v => setDelivery(d => ({ ...d, pixBundiB: v }))} />
-                          <div className="fc-calc-auto">
-                            <span className="fc-calc-label">Valor sem pix automático</span>
-                            <span className="fc-calc-valor">R$ {fmt(Math.max(0, delivery.vendaBundiB - delivery.pixBundiB))}</span>
-                          </div>
+                          <CalcAuto label="Valor sem pix automático" value={delivery.vendaBundiB - delivery.pixBundiB} />
                         </>
                       )}
                     </div>
@@ -504,15 +480,11 @@ export default function Fechamento() {
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
 
-            {/* Erros de validação */}
             {Object.keys(erros).length > 0 && (
-              <div className="fc-toast-erro">
-                {erros.vendaSist || erros.vendaDelivery}
-              </div>
+              <div className="fc-toast-erro">{erros.vendaSist || erros.vendaDelivery}</div>
             )}
 
             <button className="btn btn--calcular" onClick={calcular}>
@@ -521,62 +493,54 @@ export default function Fechamento() {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════════════════
-            RESULTADO
-        ══════════════════════════════════════════════════════ */}
+        {/* ── RESULTADO ── */}
         {etapa === 'resultado' && relatorio && (
           <div ref={resultadoRef} className="fc-fade">
-
             <div ref={conteudoRef} className="fc-resultado-wrap">
-              {/* Banner */}
-              <div className={`fc-banner ${positivo ? 'fc-banner--ok' : 'fc-banner--alerta'}`}>
-                <span className="fc-banner-icon">{positivo ? <IconCheck /> : <IconAlert />}</span>
-                <div className="fc-banner-info">
-                  <strong>{positivo ? 'Caixa fechado!' : 'Divergência encontrada'}</strong>
-                  <span>{positivo ? 'Tudo confere.' : 'Verifique os valores.'}</span>
-                  <span className="fc-banner-data">{relatorio.dataFechamento}</span>
-                </div>
-                <span className={`fc-banner-total ${positivo ? 'fc-banner-total--ok' : 'fc-banner-total--alerta'}`}>
+
+              {/* Número grande centralizado */}
+              <div className={`fc-hero ${positivo ? 'fc-hero--ok' : 'fc-hero--alerta'}`}>
+                <div className="fc-hero-icone">{positivo ? <IconCheck /> : <IconAlert />}</div>
+                <div className={`fc-hero-valor ${positivo ? 'fc-hero-valor--ok' : 'fc-hero-valor--alerta'}`}>
                   R$ {fmt(relatorio.totalGeral)}
-                </span>
+                </div>
+                <div className="fc-hero-label">{positivo ? 'Caixa fechado · Tudo confere' : 'Divergência encontrada'}</div>
+                <div className="fc-hero-data">{relatorio.dataFechamento}</div>
               </div>
 
               {/* Cards de resumo */}
               <div className="fc-resumo-grid">
-
-                {/* Card Salão */}
                 <div className="fc-card fc-card--salao">
                   <div className="fc-card-header fc-card-header--salao"><IconStore /> Salão</div>
                   <div className="fc-resumo-body">
-                    <LinhaResumo label="Vendas mesas"         value={relatorio.sistSalao} />
-                    <LinhaResumo label="Retirada líquida"     value={relatorio.pixRetiradaAuto} sub />
-                    <LinhaResumo label="Total esperado"       value={relatorio.totalVendasSalao} destaque />
+                    <LinhaResumo label="Vendas mesas"        value={relatorio.sistSalao} />
+                    <LinhaResumo label="Retirada líquida"    value={relatorio.pixRetiradaAuto} sub />
+                    <LinhaResumo label="Total esperado"      value={relatorio.totalVendasSalao} destaque />
                     <div className="fc-divider" />
-                    <LinhaResumo label="Dinheiro (bruto)"     value={relatorio.dinheiroGaveta - relatorio.trocoInicial} sub />
-                    <LinhaResumo label="Maquininha salão"     value={relatorio.maqSalao} sub />
-                    <LinhaResumo label="Maquininha retirada"  value={relatorio.maqRetirada} sub />
-                    <LinhaResumo label="Excedente func."      value={relatorio.excedente} sub />
-                    <LinhaResumo label="Total realizado"      value={relatorio.realSalao} destaque />
+                    <LinhaResumo label="Dinheiro (bruto)"    value={relatorio.dinheiroGaveta - relatorio.trocoInicial} sub />
+                    <LinhaResumo label="Maquininha salão"    value={relatorio.maqSalao} sub />
+                    <LinhaResumo label="Maquininha retirada" value={relatorio.maqRetirada} sub />
+                    <LinhaResumo label="Excedente func."     value={relatorio.excedente} sub />
+                    <LinhaResumo label="Total realizado"     value={relatorio.realSalao} destaque />
                     <div className="fc-divider" />
-                    <LinhaResumo label="Diferença"            value={relatorio.difSalao} destaque />
+                    <LinhaResumo label="Diferença"           value={relatorio.difSalao} destaque />
                   </div>
                 </div>
 
-                {/* Card Delivery */}
                 <div className="fc-card fc-card--delivery">
                   <div className="fc-card-header fc-card-header--delivery"><IconBike /> Delivery</div>
                   <div className="fc-resumo-body">
-                    <LinhaResumo label="Web Cardápio" value={relatorio.pixWebAuto} sub />
-                    <LinhaResumo label="Brendi Açaí Brendi"  value={relatorio.pixBundiAAuto} sub />
-                    <LinhaResumo label="Brendi Pizza/Hamb"   value={relatorio.pixBundiBAuto} sub />
-                    <LinhaResumo label="Total esperado"         value={relatorio.sistDeliv} destaque />
+                    <LinhaResumo label="Web Cardápio"      value={relatorio.pixWebAuto} sub />
+                    <LinhaResumo label="Brendi Açaí"       value={relatorio.pixBundiAAuto} sub />
+                    <LinhaResumo label="Brendi Pizza/Hamb" value={relatorio.pixBundiBAuto} sub />
+                    <LinhaResumo label="Total esperado"    value={relatorio.sistDeliv} destaque />
                     <div className="fc-divider" />
-                    <LinhaResumo label="Maquininhas"            value={motoboys.reduce((s,m) => s+m.maq, 0)} sub />
-                    <LinhaResumo label="Dinheiro"               value={motoboys.reduce((s,m) => s+m.din, 0)} sub />
-                    <LinhaResumo label="Gasolina"               value={relatorio.totalGasEnt} sub />
-                    <LinhaResumo label="Total realizado"        value={relatorio.realDelivLiq} destaque />
+                    <LinhaResumo label="Maquininhas"       value={motoboys.reduce((s,m) => s+m.maq, 0)} sub />
+                    <LinhaResumo label="Dinheiro"          value={motoboys.reduce((s,m) => s+m.din, 0)} sub />
+                    <LinhaResumo label="Gasolina"          value={relatorio.totalGasEnt} sub />
+                    <LinhaResumo label="Total realizado"   value={relatorio.realDelivLiq} destaque />
                     <div className="fc-divider" />
-                    <LinhaResumo label="Diferença" value={relatorio.difDeliv} destaque />
+                    <LinhaResumo label="Diferença"         value={relatorio.difDeliv} destaque />
                   </div>
                   {motoboys.length > 0 && (
                     <>
@@ -593,15 +557,9 @@ export default function Fechamento() {
                     </>
                   )}
                 </div>
-
               </div>
             </div>
 
-            {/* Status de salvamento */}
-            {salvando && <p className="fc-status">Salvando no servidor...</p>}
-            {erroSalvar && <p className="fc-status fc-status--erro">{erroSalvar}</p>}
-
-            {/* Ações */}
             <div className="fc-acoes">
               <button className="btn btn--ghost" onClick={() => setEtapa('formulario')}>
                 ← Voltar e editar
@@ -615,7 +573,6 @@ export default function Fechamento() {
             </div>
           </div>
         )}
-
       </main>
 
       {confirmarNovo && (

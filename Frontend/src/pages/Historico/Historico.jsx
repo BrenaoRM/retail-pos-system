@@ -6,6 +6,17 @@ import './Historico.css';
 
 const fmt = (v) => (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+// ── Skeleton ──────────────────────────────────────────────────
+function SkeletonLista() {
+  return (
+    <div className="hist-lista">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="sk-card" style={{ animationDelay: `${i * 0.1}s` }} />
+      ))}
+    </div>
+  );
+}
+
 // ── Modal de detalhe ──────────────────────────────────────────
 function ModalDetalhe({ f, onFechar }) {
   const positivo = Math.abs(f.total_geral) < 1;
@@ -24,7 +35,6 @@ function ModalDetalhe({ f, onFechar }) {
         </div>
 
         <div className="hist-modal-grid">
-          {/* Salão */}
           <div className="hist-secao">
             <p className="hist-secao-titulo">🏠 Salão</p>
             <div className="hist-linha"><span>Esperado</span><span>R$ {fmt(f.venda_sist)}</span></div>
@@ -34,7 +44,6 @@ function ModalDetalhe({ f, onFechar }) {
             <div className="hist-linha destaque"><span>Diferença</span><span>R$ {fmt(f.dif_salao)}</span></div>
           </div>
 
-          {/* Delivery */}
           <div className="hist-secao">
             <p className="hist-secao-titulo">🛵 Delivery</p>
             <div className="hist-linha"><span>Esperado</span><span>R$ {fmt(f.venda_web + (f.venda_app || 0))}</span></div>
@@ -45,7 +54,6 @@ function ModalDetalhe({ f, onFechar }) {
           </div>
         </div>
 
-        {/* Motoboys */}
         {Array.isArray(f.motoboys) && f.motoboys.length > 0 && (
           <div className="hist-motoboys">
             <p className="hist-secao-titulo">Motoboys</p>
@@ -85,7 +93,7 @@ export default function Historico() {
       else setFechamentos(prev => [...prev, ...dados]);
       setTemMais(dados.length === LIMITE);
       setPagina(pag);
-    } catch (e) {
+    } catch {
       setErro('Erro ao carregar fechamentos. Tente novamente.');
     } finally {
       setLoading(false);
@@ -94,7 +102,6 @@ export default function Historico() {
 
   useEffect(() => { carregar(0); }, []);
 
-  // ── Render ────────────────────────────────────────────────
   return (
     <div className="hist-root">
       <div className="hist-cabecalho">
@@ -102,15 +109,11 @@ export default function Historico() {
         {isAdmin && <span className="hist-badge-admin">Visualização: todos</span>}
       </div>
 
-      {/* Erro */}
       {erro && <div className="hist-erro">{erro}</div>}
 
-      {/* Loading inicial */}
-      {loading && fechamentos.length === 0 && (
-        <div className="hist-vazio">Carregando...</div>
-      )}
+      {/* Skeleton no loading inicial */}
+      {loading && fechamentos.length === 0 && <SkeletonLista />}
 
-      {/* Vazio */}
       {!loading && fechamentos.length === 0 && !erro && (
         <div className="hist-vazio">
           <p>Nenhum fechamento encontrado.</p>
@@ -118,29 +121,27 @@ export default function Historico() {
         </div>
       )}
 
-      {/* Lista */}
       {fechamentos.length > 0 && (
         <div className="hist-lista">
-          {fechamentos.map(f => {
+          {fechamentos.map((f, idx) => {
             const positivo = Math.abs(f.total_geral) < 1;
             return (
-              <button key={f.id} className="hist-item" onClick={() => setSelecionado(f)}>
+              <button
+                key={f.id}
+                className="hist-item"
+                onClick={() => setSelecionado(f)}
+                style={{ animationDelay: `${Math.min(idx, 8) * 0.04}s` }}
+              >
                 <div className={`hist-indicador ${positivo ? 'hist-indicador--ok' : 'hist-indicador--alerta'}`} />
                 <div className="hist-item-info">
-                  <span className="hist-item-data">
-                    {f.data_referencia || f.data_fechamento}
-                  </span>
+                  <span className="hist-item-data">{f.data_referencia || f.data_fechamento}</span>
                   {isAdmin && f.criador_nome && (
                     <span className="hist-item-autor">{f.criador_nome}</span>
                   )}
                 </div>
                 <div className="hist-item-valores">
-                  <span className="hist-item-salao">
-                    Salão R$ {fmt(f.dif_salao)}
-                  </span>
-                  <span className="hist-item-deliv">
-                    Delivery R$ {fmt(f.dif_deliv)}
-                  </span>
+                  <span className="hist-item-salao">Salão R$ {fmt(f.dif_salao)}</span>
+                  <span className="hist-item-deliv">Delivery R$ {fmt(f.dif_deliv)}</span>
                 </div>
                 <span className={`hist-item-total ${positivo ? 'hist-item-total--ok' : 'hist-item-total--alerta'}`}>
                   R$ {fmt(f.total_geral)}
@@ -152,14 +153,12 @@ export default function Historico() {
         </div>
       )}
 
-      {/* Carregar mais */}
       {temMais && (
         <button className="hist-mais" onClick={() => carregar(pagina + 1)} disabled={loading}>
           {loading ? 'Carregando...' : 'Carregar mais'}
         </button>
       )}
 
-      {/* Modal de detalhe */}
       {selecionado && (
         <ModalDetalhe f={selecionado} onFechar={() => setSelecionado(null)} />
       )}

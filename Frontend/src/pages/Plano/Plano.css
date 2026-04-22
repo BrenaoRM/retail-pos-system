@@ -5,13 +5,14 @@
   align-items: center;
   justify-content: center;
   padding: 40px 16px;
+  font-family: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
 }
 
 .plano-card {
   width: 100%;
   max-width: 420px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
   padding: 40px 32px;
   display: flex;
@@ -21,17 +22,26 @@
   text-align: center;
 }
 
-.plano-icon { font-size: 2.5rem; line-height: 1; margin-bottom: 4px; }
+.plano-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 4px;
+}
 
 .plano-card h1 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text);
+  color: #f1f5f9;
   letter-spacing: -0.03em;
 }
 
-.plano-sub { margin: 0; font-size: 0.9rem; color: var(--subtle); line-height: 1.5; }
+.plano-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  line-height: 1.5;
+}
 
 .plano-features {
   width: 100%;
@@ -45,92 +55,28 @@
   text-align: left;
 }
 
-.plano-feature { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; color: var(--muted); }
-.feature-check { color: var(--c-ok); font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
-
-/* Preço */
-.plano-preco { display: flex; align-items: baseline; gap: 4px; margin: 4px 0 8px; }
-.plano-preco-valor  { font-size: 2.2rem; font-weight: 800; color: var(--text); letter-spacing: -0.04em; }
-.plano-preco-sufixo { font-size: 0.9rem; color: var(--subtle); }
-
-/* Trial badge */
-.plano-trial-badge {
-  background: rgba(52,211,153,0.1);
-  border: 1px solid rgba(52,211,153,0.25);
-  color: var(--c-ok);
-  border-radius: 999px;
-  padding: 5px 16px;
-  font-size: 0.82rem;
-  font-weight: 600;
+.plano-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: #94a3b8;
 }
 
-/* Badge ativo */
+.feature-check {
+  color: #34d399;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
 .plano-badge {
+  background: rgba(251,191,36,0.1);
+  border: 1px solid rgba(251,191,36,0.25);
+  color: #fbbf24;
   padding: 6px 20px;
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.04em;
 }
-.plano-badge--ativo {
-  background: rgba(52,211,153,0.1);
-  border: 1px solid rgba(52,211,153,0.3);
-  color: var(--c-ok);
-}
-
-/* Info expiração */
-.plano-info-expira {
-  width: 100%;
-  background: rgba(0,0,0,0.2);
-  border-radius: 10px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: left;
-}
-.plano-info-expira span  { color: var(--muted); font-size: 0.82rem; }
-.plano-info-expira strong { color: var(--text); font-weight: 600; font-size: 0.9rem; }
-
-/* Botões */
-.plano-btn {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s, background 0.2s;
-  margin-top: 4px;
-}
-.plano-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.plano-btn--primario {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #fff;
-}
-.plano-btn--primario:hover:not(:disabled) { opacity: 0.9; }
-
-.plano-btn--secundario {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--subtle);
-  font-size: 0.82rem;
-  padding: 8px 16px;
-  width: auto;
-}
-.plano-btn--secundario:hover { color: var(--muted); }
-
-/* Erro e rodapé */
-.plano-erro {
-  color: var(--c-alerta);
-  font-size: 0.85rem;
-  background: rgba(248,113,113,0.1);
-  border: 1px solid rgba(248,113,113,0.2);
-  border-radius: 8px;
-  padding: 8px 12px;
-  width: 100%;
-  margin: 0;
-}
-.plano-rodape { font-size: 0.75rem; color: var(--subtle); margin: 0; }
