@@ -16,9 +16,9 @@ export default defineConfig({
       },
     },
     chunkSizeWarningLimit: 300,
-    minify: 'esbuild',
+    minify: 'oxc',        // ← era 'esbuild', agora usa OXC nativo do Vite 8
     target: 'esnext',
-    esbuildOptions: {
+    oxcOptions: {         // ← era 'esbuildOptions'
       drop: ['console', 'debugger'],
     },
   },
