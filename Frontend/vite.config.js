@@ -6,13 +6,12 @@ export default defineConfig({
   base: '/Big-Burguer/',
 
   build: {
-    // Chunks separados: vendor, router, supabase e app
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor:   ['react', 'react-dom'],
-          router:   ['react-router-dom'],
-          supabase: ['@supabase/supabase-js'],
+        manualChunks(id) {
+          if (id.includes('react-router-dom')) return 'router';
+          if (id.includes('react') || id.includes('react-dom')) return 'vendor';
+          if (id.includes('@supabase')) return 'supabase';
         },
       },
     },
@@ -20,7 +19,6 @@ export default defineConfig({
     minify: 'esbuild',
     target: 'esnext',
     esbuildOptions: {
-      // Remove console.log e debugger no build de produção
       drop: ['console', 'debugger'],
     },
   },
