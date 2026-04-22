@@ -54,8 +54,8 @@ function dataReferencia() {
 }
 
 // ── Estado inicial ────────────────────────────────────────────
-const SALAO_VAZIO    = { vendaSist: 0, inicial: 0, maq: 0, din: 0, excedente: 0 };
-const DELIVERY_VAZIO = { vendaWeb: 0, vendaBundi: 0, maqRetirada: 0 };
+const SALAO_VAZIO    = { vendaSist: 0, inicial: 0, maq: 0, din: 0, excedente: 0, vendaRetirada: 0, pixRetirada: 0, maqRetirada: 0 };
+const DELIVERY_VAZIO = { vendaWeb: 0, pixWeb: 0, vendaBundi: 0 };
 const MOTOBOY_NOVO   = (n) => ({ nome: `Entregador ${n}`, qtd: 0, maq: 0, din: 0, gas: 0 });
 
 // ── Campo monetário ───────────────────────────────────────────
@@ -178,8 +178,8 @@ export default function Fechamento() {
 
   // Subtotais para o toggle
   const subtotais = {
-    salao:    salao.maq + Math.max(0, salao.din - salao.inicial),
-    delivery: delivery.vendaWeb + delivery.vendaBundi + delivery.maqRetirada
+    salao:    salao.maq + Math.max(0, salao.din - salao.inicial) + (salao.vendaRetirada - salao.pixRetirada),
+    delivery: delivery.vendaWeb + delivery.vendaBundi
               + motoboys.reduce((s, m) => s + m.maq + m.din, 0),
   };
 
@@ -228,25 +228,31 @@ export default function Fechamento() {
   async function calcular() {
     if (!validar()) return;
 
-    const realSalao    = (salao.din - salao.inicial) + salao.maq;
-    const difSalao     = (realSalao - salao.excedente) - salao.vendaSist;
-    const sistDeliv    = delivery.vendaWeb + delivery.vendaBundi;
-    const totalMaq     = motoboys.reduce((s, m) => s + m.maq, 0);
-    const totalDin     = motoboys.reduce((s, m) => s + m.din, 0);
-    const totalGas     = motoboys.reduce((s, m) => s + m.gas, 0);
-    const realDelivLiq = delivery.maqRetirada + totalMaq + totalDin;
-    const difDeliv     = (realDelivLiq + totalGas) - sistDeliv;
+    const pixRetiradaAuto  = salao.vendaRetirada - salao.pixRetirada;
+    const totalVendasSalao = salao.vendaSist + pixRetiradaAuto;
+    const realSalao        = (salao.din - salao.inicial) + salao.maq + salao.maqRetirada + salao.excedente;
+    const difSalao         = realSalao - totalVendasSalao;
+    const sistDeliv        = delivery.vendaWeb + delivery.vendaBundi;
+    const pixWebAuto       = delivery.vendaWeb - delivery.pixWeb;
+    const totalMaq         = motoboys.reduce((s, m) => s + m.maq, 0);
+    const totalDin         = motoboys.reduce((s, m) => s + m.din, 0);
+    const totalGas         = motoboys.reduce((s, m) => s + m.gas, 0);
+    const realDelivLiq     = totalMaq + totalDin;
+    const difDeliv         = (realDelivLiq + totalGas) - sistDeliv;
 
     const dados = {
       sistSalao: salao.vendaSist, realSalao, excedente: salao.excedente, difSalao,
+      totalVendasSalao,
+      vendaRetirada: salao.vendaRetirada, pixRetirada: salao.pixRetirada, pixRetiradaAuto,
+      maqRetirada: salao.maqRetirada,
       sistDeliv, realDelivLiq, totalGasEnt: totalGas, difDeliv,
+      pixWebAuto, vendaWeb: delivery.vendaWeb, pixWeb: delivery.pixWeb,
       totalGeral: difSalao + difDeliv,
       dataFechamento: dataReferencia(),
       motoboys,
       // Campos originais para salvar no banco
       trocoInicial: salao.inicial, maqSalao: salao.maq, dinheiroGaveta: salao.din,
-      vendaWeb: delivery.vendaWeb, vendaBundi: delivery.vendaBundi,
-      maqRetirada: delivery.maqRetirada,
+      vendaBundi: delivery.vendaBundi,
     };
 
     setRelatorio(dados);
@@ -321,8 +327,8 @@ export default function Fechamento() {
                     </div>
 
                     <div className="fc-secao">
-                      <span className="fc-secao-label">Sistema</span>
-                      <Campo label="Vendas totais (mesas)" value={salao.vendaSist} erro={erros.vendaSist}
+                      <span className="fc-secao-label">Vendas mesas</span>
+                      <Campo label="Venda total" value={salao.vendaSist} erro={erros.vendaSist}
                         onChange={v => { setSalao(s => ({ ...s, vendaSist: v })); setErros(e => ({ ...e, vendaSist: null })); }} />
                     </div>
 
@@ -330,12 +336,32 @@ export default function Fechamento() {
 
                     <div className="fc-secao">
                       <span className="fc-secao-label">Caixa físico</span>
-                      <Campo label="Troco inicial" hint="valor na gaveta ao abrir" value={salao.inicial}
-                        onChange={v => setSalao(s => ({ ...s, inicial: v }))} />
-                      <Campo label="Maquininha" value={salao.maq}
-                        onChange={v => setSalao(s => ({ ...s, maq: v }))} />
                       <Campo label="Dinheiro na gaveta" value={salao.din}
                         onChange={v => setSalao(s => ({ ...s, din: v }))} />
+                      <Campo label="Troco inicial" hint="valor na gaveta ao abrir caixa" value={salao.inicial}
+                        onChange={v => setSalao(s => ({ ...s, inicial: v }))} />
+                      <div className="fc-calc-auto">
+                        <span className="fc-calc-label">Valor bruto</span>
+                        <span className="fc-calc-valor">R$ {fmt(Math.max(0, salao.din - salao.inicial))}</span>
+                      </div>
+                      <Campo label="Maquininha" value={salao.maq}
+                        onChange={v => setSalao(s => ({ ...s, maq: v }))} />
+                    </div>
+
+                    <div className="fc-divider" />
+
+                    <div className="fc-secao">
+                      <span className="fc-secao-label">Vendas retirada</span>
+                      <Campo label="Venda total" value={salao.vendaRetirada}
+                        onChange={v => setSalao(s => ({ ...s, vendaRetirada: v }))} />
+                      <Campo label="Venda em pix automatico" value={salao.pixRetirada}
+                        onChange={v => setSalao(s => ({ ...s, pixRetirada: v }))} />
+                      <div className="fc-calc-auto">
+                        <span className="fc-calc-label">Valor sem pix automatico</span>
+                        <span className="fc-calc-valor">R$ {fmt(Math.max(0, salao.vendaRetirada - salao.pixRetirada))}</span>
+                      </div>
+                      <Campo label="Maquininha" value={salao.maqRetirada}
+                        onChange={v => setSalao(s => ({ ...s, maqRetirada: v }))} />
                     </div>
 
                     <div className="fc-divider" />
@@ -357,18 +383,16 @@ export default function Fechamento() {
 
                     <div className="fc-secao">
                       <span className="fc-secao-label">Vendas online</span>
-                      <Campo label="Web Cardápio" value={delivery.vendaWeb} erro={erros.vendaDelivery}
+                      <Campo label="Web Cardápio — Valor total de venda" value={delivery.vendaWeb} erro={erros.vendaDelivery}
                         onChange={v => { setDelivery(d => ({ ...d, vendaWeb: v })); setErros(e => ({ ...e, vendaDelivery: null })); }} />
+                      <Campo label="Web Cardápio — Valor pix" value={delivery.pixWeb}
+                        onChange={v => setDelivery(d => ({ ...d, pixWeb: v }))} />
+                      <div className="fc-calc-auto">
+                        <span className="fc-calc-label">Pix automático Web Cardápio</span>
+                        <span className="fc-calc-valor">R$ {fmt(Math.max(0, delivery.vendaWeb - delivery.pixWeb))}</span>
+                      </div>
                       <Campo label="App Brendi" value={delivery.vendaBundi}
                         onChange={v => setDelivery(d => ({ ...d, vendaBundi: v }))} />
-                    </div>
-
-                    <div className="fc-divider" />
-
-                    <div className="fc-secao">
-                      <span className="fc-secao-label">Retirada no balcão</span>
-                      <Campo label="Maquininha balcão" value={delivery.maqRetirada}
-                        onChange={v => setDelivery(d => ({ ...d, maqRetirada: v }))} />
                     </div>
 
                     <div className="fc-divider" />
@@ -447,17 +471,22 @@ export default function Fechamento() {
                 <div className="fc-card fc-card--salao">
                   <div className="fc-card-header fc-card-header--salao"><IconStore /> Salão</div>
                   <div className="fc-resumo-body">
-                    <LinhaResumo label="Esperado (sistema)" value={relatorio.sistSalao} />
-                    <LinhaResumo label="Realizado (caixa)"  value={relatorio.realSalao} />
-                    <LinhaResumo label="Excedente"          value={relatorio.excedente} sub />
+                    <LinhaResumo label="Vendas mesas"            value={relatorio.sistSalao} />
+                    <LinhaResumo label="Retirada líquida"        value={relatorio.pixRetiradaAuto} sub />
+                    <LinhaResumo label="Total esperado"          value={relatorio.totalVendasSalao} destaque />
                     <div className="fc-divider" />
-                    <LinhaResumo label="Diferença" value={relatorio.difSalao} destaque />
+                    <LinhaResumo label="Realizado (caixa)"       value={relatorio.realSalao} />
+                    <LinhaResumo label="Excedente"               value={relatorio.excedente} sub />
+                    <div className="fc-divider" />
+                    <LinhaResumo label="Diferença"               value={relatorio.difSalao} destaque />
                   </div>
                 </div>
 
                 <div className="fc-card fc-card--delivery">
                   <div className="fc-card-header fc-card-header--delivery"><IconBike /> Delivery</div>
                   <div className="fc-resumo-body">
+                    <LinhaResumo label="Web Cardápio — Venda total" value={relatorio.vendaWeb} />
+                    <LinhaResumo label="Pix automático Web Cardápio" value={relatorio.pixWebAuto} sub />
                     <LinhaResumo label="Esperado (sistema)"  value={relatorio.sistDeliv} />
                     <LinhaResumo label="Realizado (líquido)" value={relatorio.realDelivLiq} />
                     <LinhaResumo label="Gasolina"            value={relatorio.totalGasEnt} sub />

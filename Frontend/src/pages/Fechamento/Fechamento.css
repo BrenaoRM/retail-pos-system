@@ -252,6 +252,32 @@
 }
 .motoboy-campo input:focus { border-color: rgba(96,165,250,0.4); }
 
+/* ── Cálculo automático ── */
+.fc-calc-auto {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(96,165,250,0.06);
+  border: 1px solid rgba(96,165,250,0.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 2px;
+}
+.fc-calc-label {
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--c-salao); text-transform: uppercase; letter-spacing: 0.04em;
+}
+.fc-calc-valor {
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--c-salao);
+}
+.fc-card--delivery .fc-calc-auto {
+  background: rgba(251,146,60,0.06);
+  border-color: rgba(251,146,60,0.15);
+}
+.fc-card--delivery .fc-calc-label,
+.fc-card--delivery .fc-calc-valor {
+  color: var(--c-deliv);
+}
+
 /* ── Toast de erro ── */
 .fc-toast-erro {
   display: flex; align-items: center; gap: 8px;
