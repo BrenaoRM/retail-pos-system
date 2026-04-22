@@ -5,10 +5,10 @@
  */
 
 import React, { useLayoutEffect, useRef } from 'react';
-import { Campo } from '../components/Campo';
-import { CalcAuto } from '../components/CalcAuto';
-import { IconStore, IconBike } from '../components/Icons';
-import { fmt } from '../lib/format';
+import { Campo } from "../../components/Campo";
+import { CalcAuto } from "../../components/CalcAuto";
+import { IconStore, IconBike } from "../../components/Icons";
+import { fmt } from "../../lib/format";
 
 const ABAS = [
   { id: 'salao', label: 'Salão', Icon: IconStore },

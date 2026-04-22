@@ -5,9 +5,9 @@
  */
 
 import React from 'react';
-import { LinhaResumo } from '../components/LinhaResumo';
-import { IconStore, IconBike, IconCheck, IconAlert, IconCamera, IconRefresh } from '../components/Icons';
-import { fmt } from '../lib/format';
+import { LinhaResumo } from "../../components/LinhaResumo";
+import { IconStore, IconBike, IconCheck, IconAlert, IconCamera, IconRefresh } from "../../components/Icons";
+import { fmt } from "../../lib/format";
 
 export function ResultadoFechamento({
   resultadoRef,
