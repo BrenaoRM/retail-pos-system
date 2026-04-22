@@ -1,0 +1,1 @@
+var e=e=>(Number(e)||0).toLocaleString(`pt-BR`,{minimumFractionDigits:2,maximumFractionDigits:2}),t=e=>parseFloat(String(e||``).replace(/\./g,``).replace(`,`,`.`))||0;export{t as n,e as t};
