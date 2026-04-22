@@ -1,24 +1,6 @@
 /* ── Fechamento ───────────────────────────────────────────── */
-:root {
-  --c-salao:    #60a5fa;
-  --c-salao-bg: rgba(96,165,250,0.08);
-  --c-deliv:    #fb923c;
-  --c-deliv-bg: rgba(251,146,60,0.08);
-  --c-ok:       #34d399;
-  --c-ok-bg:    rgba(52,211,153,0.1);
-  --c-alerta:   #f87171;
-  --c-alerta-bg:rgba(248,113,113,0.1);
-  --c-text:     #f1f5f9;
-  --c-muted:    #94a3b8;
-  --c-subtle:   #475569;
-  --c-card:     rgba(30,41,59,0.9);
-  --c-border:   rgba(255,255,255,0.08);
-  --c-input-bg: rgba(0,0,0,0.3);
-}
-
 .fc-root {
   min-height: calc(100vh - 52px);
-  font-family: 'IBM Plex Sans', 'Inter', system-ui, sans-serif;
   color: var(--c-text);
   -webkit-font-smoothing: antialiased;
 }

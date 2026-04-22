@@ -169,7 +169,7 @@ function Modal({ titulo, mensagem, onConfirmar, onCancelar }) {
 
 // ── Componente principal ──────────────────────────────────────
 export default function Fechamento() {
-  const { user } = useAuth();
+  
 
   // Carrega rascunho salvo (evita reset ao Alt+Tab)
   const rascunho = carregarRascunho();

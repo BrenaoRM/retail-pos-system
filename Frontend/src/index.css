@@ -1,14 +1,29 @@
-/* Reset global */
+/* ── Reset global ───────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Variáveis globais — evita repetição nos arquivos de página */
+:root {
+  --font:       'IBM Plex Sans', 'Inter', system-ui, sans-serif;
+  --bg:         #0b1120;
+  --text:       #f1f5f9;
+  --muted:      #94a3b8;
+  --subtle:     #475569;
+  --border:     rgba(255,255,255,0.08);
+  --card:       #111827;
+  --c-ok:       #34d399;
+  --c-alerta:   #f87171;
+  --c-salao:    #60a5fa;
+  --c-deliv:    #fb923c;
+}
 
 html, body, #root {
   min-height: 100vh;
-  background: #0b1120;
-  color: #f1f5f9;
+  background: var(--bg);
+  color: var(--text);
 }
 
 body {
-  font-family: 'IBM Plex Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -17,3 +32,70 @@ body {
 ::-webkit-scrollbar       { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+/* ── Tela de carregamento ── */
+.tela-carregando {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--subtle);
+  font-family: var(--font);
+}
+
+/* ── Navbar ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(11,17,32,0.97);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  height: 52px;
+  gap: 4px;
+  font-family: var(--font);
+}
+
+.navbar-logo {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--text);
+  margin-right: auto;
+  cursor: pointer;
+}
+
+.navbar-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 5px 12px;
+  color: var(--subtle);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.navbar-btn--ativo {
+  background: rgba(96,165,250,0.12);
+  border-color: rgba(96,165,250,0.25);
+  color: var(--c-salao);
+}
+
+.navbar-sair {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 5px 12px;
+  color: var(--subtle);
+  font-size: 0.78rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: 2px;
+}
+.navbar-sair:hover { color: var(--muted); }
