@@ -4,7 +4,7 @@
  * ~250 linhas - Reutilizável, testável
  */
 
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { Campo } from "../../components/Campo";
 import { CalcAuto } from "../../components/CalcAuto";
 import { IconStore, IconBike } from "../../components/Icons";
@@ -108,17 +108,53 @@ export function FormularioFechamento({
 
   const abaIdx = ABAS.findIndex((a) => a.id === aba);
 
+  // ── Ajusta altura do viewport para a altura do slide ativo ──
+  const viewportRef = useRef(null);
+  const slideRefs = useRef([]);
+  const [altura, setAltura] = useState('auto');
+
+  useLayoutEffect(() => {
+    function medir() {
+      const ativo = slideRefs.current[abaIdx];
+      if (ativo) setAltura(`${ativo.scrollHeight}px`);
+    }
+    medir();
+
+    // Remede quando o conteúdo do slide ativo mudar (ex: + motoboy)
+    const ativo = slideRefs.current[abaIdx];
+    if (!ativo || typeof ResizeObserver === 'undefined') return;
+    const obs = new ResizeObserver(medir);
+    obs.observe(ativo);
+    return () => obs.disconnect();
+  }, [abaIdx, motoboys.length, brendiAtivo]);
+
+  // Remede em resize de janela
+  useEffect(() => {
+    function onResize() {
+      const ativo = slideRefs.current[abaIdx];
+      if (ativo) setAltura(`${ativo.scrollHeight}px`);
+    }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [abaIdx]);
+
   return (
     <div className="fc-fade">
       <ToggleAbas aba={aba} onChange={onAbaChange} subtotais={subtotais} />
 
-      <div className="fc-viewport" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div
+        className="fc-viewport"
+        ref={viewportRef}
+        style={{ height: altura }}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         <div
           className="fc-track"
           style={{ transform: `translateX(-${abaIdx * 50}%)` }}
         >
           {/* ── Salão ── */}
-          <div className="fc-slide">
+          <div className="fc-slide" ref={(el) => (slideRefs.current[0] = el)}>
             <div className="fc-card fc-card--salao">
               <div className="fc-card-header fc-card-header--salao">
                 <IconStore /> Salão
@@ -201,7 +237,7 @@ export function FormularioFechamento({
           </div>
 
           {/* ── Delivery ── */}
-          <div className="fc-slide">
+          <div className="fc-slide" ref={(el) => (slideRefs.current[1] = el)}>
             <div className="fc-card fc-card--delivery">
               <div className="fc-card-header fc-card-header--delivery">
                 <IconBike /> Delivery
