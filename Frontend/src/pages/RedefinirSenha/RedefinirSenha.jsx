@@ -11,19 +11,37 @@ export default function RedefinirSenha() {
   const [pronto, setPronto]   = useState(false);
 
   useEffect(() => {
-    // Verifica se já tem sessão ativa (token já foi processado antes de montar)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setPronto(true);
-    });
+    // Com HashRouter a URL fica: /#/redefinir-senha#access_token=...
+    // window.location.hash contém tudo após o primeiro #
+    // Precisamos pegar o fragmento completo da URL
+    const hash = window.location.href.split('#').slice(1).join('#');
+    
+    // Extrai os parâmetros do fragmento
+    const params = new URLSearchParams(hash.includes('access_token') ? hash.split('?')[1] || hash.replace('/redefinir-senha', '') : '');
+    
+    const accessToken  = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type         = params.get('type');
 
-    // Caso o evento ainda venha depois de montar
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
-        setPronto(true);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    if (accessToken && type === 'recovery') {
+      // Seta a sessão manualmente com os tokens da URL
+      supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      }).then(({ error }) => {
+        if (error) {
+          setErro('Link inválido ou expirado. Solicite um novo.');
+        } else {
+          setPronto(true);
+        }
+      });
+    } else {
+      // Tenta pegar sessão existente (caso já tenha sido processado)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) setPronto(true);
+        else setErro('Link inválido ou expirado. Solicite um novo.');
+      });
+    }
   }, []);
 
   async function handleSubmit(e) {
@@ -58,11 +76,19 @@ export default function RedefinirSenha() {
 
         {erro && <div className="login-msg login-msg--erro">{erro}</div>}
 
-        {!pronto ? (
+        {!pronto && !erro && (
           <p style={{ textAlign: 'center', color: 'var(--muted)' }}>
-            Aguardando verificação do link…
+            Verificando link…
           </p>
-        ) : (
+        )}
+
+        {!pronto && erro && (
+          <div className="login-links" style={{ marginTop: '1rem' }}>
+            <button onClick={() => navigate('/login')}>Voltar ao login</button>
+          </div>
+        )}
+
+        {pronto && (
           <form onSubmit={handleSubmit} className="login-form">
             <div className="login-field">
               <label>Nova senha</label>
