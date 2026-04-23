@@ -11,7 +11,6 @@ export default function RedefinirSenha() {
   const [pronto, setPronto]   = useState(false);
 
   useEffect(() => {
-    // Agora os tokens chegam como query string: /redefinir-senha?access_token=...
     const params = new URLSearchParams(window.location.search);
 
     const accessToken  = params.get('access_token');
