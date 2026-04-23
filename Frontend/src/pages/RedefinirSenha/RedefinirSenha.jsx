@@ -1,23 +1,28 @@
-// src/pages/RedefinirSenha/RedefinirSenha.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import '../Login/Login.css'; // reutiliza o mesmo estilo
+import '../Login/Login.css';
 
 export default function RedefinirSenha() {
   const navigate = useNavigate();
   const [senha, setSenha]     = useState('');
   const [loading, setLoading] = useState(false);
   const [erro, setErro]       = useState('');
-  const [pronto, setPronto]   = useState(false); // token chegou e é válido
+  const [pronto, setPronto]   = useState(false);
 
-  // Quando o Supabase redireciona para cá, ele emite o evento PASSWORD_RECOVERY
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
+    // Verifica se já tem sessão ativa (token já foi processado antes de montar)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) setPronto(true);
+    });
+
+    // Caso o evento ainda venha depois de montar
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
         setPronto(true);
       }
     });
+
     return () => subscription.unsubscribe();
   }, []);
 
