@@ -83,7 +83,7 @@ Deno.serve(async (req: Request) => {
           perfil: 'funcionario',
           nome: email.split('@')[0],
         },
-        emailRedirectTo:  `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/#/redefinir-senha`,
+        emailRedirectTo:  `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/auth-redirect.html`,
       },
     });
 
@@ -112,7 +112,7 @@ Deno.serve(async (req: Request) => {
 
     // Envia email de recuperação de senha para o funcionário definir a própria senha
     const { error: resetError } = await supabaseAnon.auth.resetPasswordForEmail(email, {
-      redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/#/redefinir-senha`,
+      redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/auth-redirect.html`,
     });
 
     if (resetError) {

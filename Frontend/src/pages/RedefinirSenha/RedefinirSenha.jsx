@@ -11,32 +11,22 @@ export default function RedefinirSenha() {
   const [pronto, setPronto]   = useState(false);
 
   useEffect(() => {
-    // Com HashRouter a URL fica: /#/redefinir-senha#access_token=...
-    // window.location.hash contém tudo após o primeiro #
-    // Precisamos pegar o fragmento completo da URL
-    const hash = window.location.href.split('#').slice(1).join('#');
-    
-    // Extrai os parâmetros do fragmento
-    const params = new URLSearchParams(hash.includes('access_token') ? hash.split('?')[1] || hash.replace('/redefinir-senha', '') : '');
-    
+    // Agora os tokens chegam como query string: /redefinir-senha?access_token=...
+    const params = new URLSearchParams(window.location.search);
+
     const accessToken  = params.get('access_token');
     const refreshToken = params.get('refresh_token');
     const type         = params.get('type');
 
     if (accessToken && type === 'recovery') {
-      // Seta a sessão manualmente com os tokens da URL
       supabase.auth.setSession({
         access_token: accessToken,
         refresh_token: refreshToken,
       }).then(({ error }) => {
-        if (error) {
-          setErro('Link inválido ou expirado. Solicite um novo.');
-        } else {
-          setPronto(true);
-        }
+        if (error) setErro('Link inválido ou expirado. Solicite um novo.');
+        else setPronto(true);
       });
     } else {
-      // Tenta pegar sessão existente (caso já tenha sido processado)
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) setPronto(true);
         else setErro('Link inválido ou expirado. Solicite um novo.');

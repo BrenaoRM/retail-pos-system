@@ -53,7 +53,7 @@ export async function logout() {
 /** Recuperação de senha por email */
 export async function recuperarSenha(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://brenao28.github.io/Big-Burguer/#/redefinir-senha',
+    redirectTo: 'https://brenao28.github.io/Big-Burguer/auth-redirect.html',
   });
   if (error) throw error;
 }
