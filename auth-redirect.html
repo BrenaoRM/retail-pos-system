@@ -13,18 +13,19 @@
     const refreshToken = params.get('refresh_token');
     const type         = params.get('type');
 
+    const base = '/Big-Burguer/';
+
     if (accessToken && type === 'recovery') {
-      // Passa os tokens como parte do hash do HashRouter adsdadsa
       window.location.replace(
-        '/?access_token=' + accessToken +
+        base + '?access_token=' + accessToken +
         '&refresh_token=' + refreshToken +
         '&type=' + type +
         '#/redefinir-senha'
       );
     } else {
-      window.location.replace('/#/login');
+      window.location.replace(base + '#/login');
     }
   </script>
   <p>Redirecionando...</p>
 </body>
-</html> 
+</html>
