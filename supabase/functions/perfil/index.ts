@@ -1,8 +1,3 @@
-// supabase/functions/perfil/index.ts
-// ─────────────────────────────────────────────────────────────
-// Retorna o perfil do usuário autenticado.
-// ─────────────────────────────────────────────────────────────
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
@@ -36,6 +31,20 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (error) return json({ error: 'Perfil não encontrado' }, 404);
+
+    // Se for funcionário, herda o plano do gerente
+    if (data.perfil === 'funcionario' && data.gerente_id) {
+      const { data: gerente } = await supabase
+        .from('perfis')
+        .select('plano_ativo, plano_expira_em')
+        .eq('id', data.gerente_id)
+        .single();
+
+      if (gerente) {
+        data.plano_ativo     = gerente.plano_ativo;
+        data.plano_expira_em = gerente.plano_expira_em;
+      }
+    }
 
     return json(data);
 

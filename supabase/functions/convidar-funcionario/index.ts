@@ -95,15 +95,16 @@ Deno.serve(async (req: Request) => {
     // Garante perfil como 'funcionario' via service role (fallback do trigger)
     if (signUpData?.user?.id) {
       const { error: upsertError } = await supabase
-        .from('perfis')
-        .upsert({
-          id: signUpData.user.id,
-          email,
-          nome: email.split('@')[0],
-          perfil: 'funcionario',
-          ativo: true,
-          plano_ativo: false,
-        }, { onConflict: 'id' });
+      .from('perfis')
+      .upsert({
+        id: signUpData.user.id,
+        email,
+        nome: email.split('@')[0],
+        perfil: 'funcionario',
+        ativo: true,
+        plano_ativo: false,
+        gerente_id: user.id,
+      }, { onConflict: 'id' });
 
       if (upsertError) {
         console.error('Erro no upsert do perfil:', upsertError);
