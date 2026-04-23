@@ -5,23 +5,24 @@
   <title>Redirecionando...</title>
 </head>
 <body>
+  <pre id="info" style="word-break:break-all; padding:1rem; font-size:12px;"></pre>
   <script>
-    // O Supabase redireciona para esta página com os tokens no fragmento
-    // Ex: /auth-redirect.html#access_token=...&type=recovery
-    const hash = window.location.hash.substring(1); // remove o #
-    const params = new URLSearchParams(hash);
+    const hash   = window.location.hash;
+    const search = window.location.search;
+    const href   = window.location.href;
 
+    document.getElementById('info').textContent =
+      'HREF:\n' + href + '\n\nHASH:\n' + hash + '\n\nSEARCH:\n' + search;
+
+    const params = new URLSearchParams(hash.substring(1));
     const accessToken  = params.get('access_token');
     const refreshToken = params.get('refresh_token');
     const type         = params.get('type');
 
-    if (accessToken && type === 'recovery') {
-      // Manda para o HashRouter com os tokens como query string
-      window.location.href = `/#/redefinir-senha?access_token=${accessToken}&refresh_token=${refreshToken}&type=${type}`;
-    } else {
-      window.location.href = '/#/login';
-    }
+    document.getElementById('info').textContent +=
+      '\n\naccess_token: ' + accessToken +
+      '\nrefresh_token: ' + refreshToken +
+      '\ntype: ' + type;
   </script>
-  <p>Redirecionando...</p>
 </body>
 </html>
