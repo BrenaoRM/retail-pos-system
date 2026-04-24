@@ -1,11 +1,12 @@
 // src/App.jsx
 import React, { lazy, Suspense, memo, useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   HashRouter, Routes, Route, Navigate,
   useNavigate, useLocation,
 } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { logout } from './lib/api';
+import { logout, cancelarAssinatura } from './lib/api';
 
 // ── Lazy loading ──────────────────────────────────────────────
 const Login      = lazy(() => import('./pages/Login/Login'));
@@ -82,11 +83,91 @@ function GuardaGerente({ children }) {
   return children;
 }
 
+// ── Modal de Assinatura ───────────────────────────────────────
+function ModalAssinatura({ onFechar }) {
+  const [confirmando, setConfirmando] = useState(false);
+  const [cancelando, setCancelando] = useState(false);
+  const { perfil, planoAtivo } = useAuth();
+
+  const addToast = React.useContext(ToastContext);
+
+  async function handleCancelar() {
+    setCancelando(true);
+    try {
+      await cancelarAssinatura();
+      addToast('Assinatura cancelada. Acesso mantido até o fim do período.', 'ok');
+      onFechar();
+    } catch (err) {
+      addToast(err.message || 'Erro ao cancelar assinatura.', 'erro');
+    } finally {
+      setCancelando(false);
+      setConfirmando(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={onFechar}>
+      <div className="modal-assinatura" onClick={e => e.stopPropagation()}>
+        <div className="modal-assinatura-header">
+          <span className="modal-assinatura-icone">💳</span>
+          <h2>Assinatura</h2>
+        </div>
+
+        <div className="modal-assinatura-status">
+          <div className={`assinatura-badge ${planoAtivo ? 'assinatura-badge--ativa' : 'assinatura-badge--inativa'}`}>
+            {planoAtivo ? '⭐ Plano Pro — Ativo' : '⚠️ Plano inativo'}
+          </div>
+          {perfil?.plano_expira_em && (
+            <p className="assinatura-expira">
+              Renova em: {new Date(perfil.plano_expira_em).toLocaleDateString('pt-BR')}
+            </p>
+          )}
+        </div>
+
+        {!confirmando ? (
+          <div className="modal-assinatura-acoes">
+            {planoAtivo && (
+              <button
+                className="btn-cancelar-assinatura"
+                onClick={() => setConfirmando(true)}
+              >
+                Cancelar assinatura
+              </button>
+            )}
+            <button className="btn-fechar-modal" onClick={onFechar}>
+              Fechar
+            </button>
+          </div>
+        ) : (
+          <div className="modal-assinatura-confirmar">
+            <p>Tem certeza? Você perderá o acesso ao sistema ao fim do período pago.</p>
+            <div className="modal-assinatura-acoes">
+              <button
+                className="btn-cancelar-assinatura"
+                onClick={handleCancelar}
+                disabled={cancelando}
+              >
+                {cancelando ? 'Cancelando…' : 'Sim, cancelar'}
+              </button>
+              <button className="btn-fechar-modal" onClick={() => setConfirmando(false)}>
+                Voltar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Avatar dropdown ───────────────────────────────────────────
 function AvatarMenu({ user }) {
   const [aberto, setAberto] = useState(false);
+  const [modalAssinatura, setModalAssinatura] = useState(false);
   const navigate = useNavigate();
   const ref = useRef(null);
+  const { perfil } = useAuth();
+  const isGerente = perfil?.perfil === 'gerente' || perfil?.perfil === 'admin';
   const inicial = (user?.email?.[0] ?? '?').toUpperCase();
 
   useEffect(() => {
@@ -98,24 +179,35 @@ function AvatarMenu({ user }) {
   }, []);
 
   return (
-    <div className="avatar-wrap" ref={ref}>
-      <button className="avatar-btn" onClick={() => setAberto(v => !v)} title={user?.email}>
-        {inicial}
-      </button>
-      {aberto && (
-        <div className="avatar-menu">
-          <div className="avatar-menu-email">{user?.email}</div>
-          <hr className="avatar-menu-hr" />
-          <button className="avatar-menu-item avatar-menu-item--danger" onClick={async () => {
-            setAberto(false);
-            await logout();
-            navigate('/login');
-          }}>
-            Sair
-          </button>
-        </div>
-      )}
-    </div>
+    <>
+      <div className="avatar-wrap" ref={ref}>
+        <button className="avatar-btn" onClick={() => setAberto(v => !v)} title={user?.email}>
+          {inicial}
+        </button>
+        {aberto && (
+          <div className="avatar-menu">
+            <div className="avatar-menu-email">{user?.email}</div>
+            <hr className="avatar-menu-hr" />
+            {isGerente && (
+              <button
+                className="avatar-menu-item avatar-menu-item--assinatura"
+                onClick={() => { setAberto(false); setModalAssinatura(true); }}
+              >
+                💳 Assinatura
+              </button>
+            )}
+            <button className="avatar-menu-item avatar-menu-item--danger" onClick={async () => {
+              setAberto(false);
+              await logout();
+              navigate('/login');
+            }}>
+              Sair
+            </button>
+          </div>
+        )}
+      </div>
+      {modalAssinatura && createPortal(<ModalAssinatura onFechar={() => setModalAssinatura(false)} />, document.body)}
+    </>
   );
 }
 
@@ -134,7 +226,6 @@ const Navbar = memo(function Navbar() {
     { path: '/',          label: 'Caixa'    },
     { path: '/historico', label: 'Histórico' },
     ...(isGerente ? [{ path: '/equipe', label: '👥 Equipe' }] : []),
-    { path: '/plano',     label: planoAtivo ? '⭐ Pro' : 'Plano' },
   ];
 
   // Move o indicador animado para o botão ativo

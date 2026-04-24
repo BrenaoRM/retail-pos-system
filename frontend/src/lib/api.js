@@ -130,3 +130,12 @@ export async function criarPreferenciaMp({ titulo, preco, userId, userEmail }) {
 export async function criarAssinaturaMp({ userId, userEmail }) {
   return callFunction('criar-assinatura-mp', { userId, userEmail });
 }
+
+/**
+ * Cancela a assinatura recorrente no Mercado Pago.
+ * O acesso continua até plano_expira_em — apenas não renova mais.
+ * Retorna { ok: true, plano_expira_em }
+ */
+export async function cancelarAssinatura() {
+  return callFunction('cancelar-assinatura', {});
+}
