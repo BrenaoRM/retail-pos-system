@@ -30,7 +30,7 @@ html, body, #root {
   min-height: 100vh;
   /* Gradiente sutil — dá profundidade ao glassmorphism */
   background: radial-gradient(ellipse at 50% -10%, #0f2444 0%, #0b1120 55%);
-  background-attachment: fixed;
+  background-attachment: scroll;
   color: var(--text);
 }
 
@@ -104,8 +104,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(11,17,32,0.85);
-  backdrop-filter: blur(16px);
+  background: rgba(11,17,32,0.95);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   padding: 0 16px;
