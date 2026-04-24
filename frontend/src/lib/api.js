@@ -97,8 +97,8 @@ export async function deletarFechamento(id) {
  * Convida um funcionário por email.
  * O Supabase envia email com link para o funcionário definir sua senha.
  */
-export async function convidarFuncionario(email) {
-  return callFunction('convidar-funcionario', { email });
+export async function convidarFuncionario(email, nome) {
+  return callFunction('convidar-funcionario', { email, nome });
 }
 
 /**

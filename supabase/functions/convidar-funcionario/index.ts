@@ -49,11 +49,17 @@ Deno.serve(async (req: Request) => {
     }
 
     const body = await req.json();
-    const { email } = body;
+    const { email, nome } = body;
 
     if (!email || !email.includes('@')) {
       return json({ error: 'Email inválido' }, 400);
     }
+
+    if (!nome || nome.trim().length < 2) {
+      return json({ error: 'Nome inválido' }, 400);
+    }
+
+    const nomeTrimado = nome.trim();
 
     // Verifica se email já existe
     const { data: existente } = await supabase
@@ -81,7 +87,7 @@ Deno.serve(async (req: Request) => {
       options: {
         data: {
           perfil: 'funcionario',
-          nome: email.split('@')[0],
+          nome: nomeTrimado,
         },
         emailRedirectTo:  `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/auth-redirect.html`,
       },
@@ -99,7 +105,7 @@ Deno.serve(async (req: Request) => {
       .upsert({
         id: signUpData.user.id,
         email,
-        nome: email.split('@')[0],
+        nome: nomeTrimado,
         perfil: 'funcionario',
         ativo: true,
         plano_ativo: false,

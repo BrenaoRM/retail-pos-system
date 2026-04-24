@@ -72,6 +72,7 @@ export default function Equipe() {
   const [loading,        setLoading]        = useState(true);
   const [erro,           setErro]           = useState('');
   const [emailConvite,   setEmailConvite]   = useState('');
+  const [nomeConvite,    setNomeConvite]    = useState('');
   const [enviando,       setEnviando]       = useState(false);
   const [removendo,      setRemovendo]      = useState(false);
   const [alvoRemover,    setAlvoRemover]    = useState(null); // { id, nome, email }
@@ -92,12 +93,13 @@ export default function Equipe() {
 
   async function handleConvidar(e) {
     e.preventDefault();
-    if (!emailConvite.trim()) return;
+    if (!emailConvite.trim() || !nomeConvite.trim()) return;
     setEnviando(true);
     try {
-      await convidarFuncionario(emailConvite.trim());
-      addToast(`Convite enviado para ${emailConvite}!`, 'ok');
+      await convidarFuncionario(emailConvite.trim(), nomeConvite.trim());
+      addToast(`Convite enviado para ${nomeConvite}!`, 'ok');
       setEmailConvite('');
+      setNomeConvite('');
       // Recarrega a lista após breve delay (usuário pode aparecer)
       setTimeout(carregar, 1500);
     } catch (err) {
@@ -137,6 +139,15 @@ export default function Equipe() {
         </p>
         <form className="equipe-convite-form" onSubmit={handleConvidar}>
           <input
+            type="text"
+            className="equipe-input"
+            placeholder="Nome do funcionário"
+            value={nomeConvite}
+            onChange={e => setNomeConvite(e.target.value)}
+            disabled={enviando}
+            required
+          />
+          <input
             type="email"
             className="equipe-input"
             placeholder="email@funcionario.com"
@@ -148,7 +159,7 @@ export default function Equipe() {
           <button
             type="submit"
             className="equipe-btn-convidar"
-            disabled={enviando || !emailConvite.trim()}
+            disabled={enviando || !emailConvite.trim() || !nomeConvite.trim()}
           >
             {enviando ? 'Enviando…' : 'Enviar convite'}
           </button>
