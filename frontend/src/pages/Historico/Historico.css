@@ -165,7 +165,7 @@
   background: rgba(0,0,0,0.75);
   backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
-  z-index: 100; padding: 16px;
+  z-index: 9999; padding: 16px;
 }
 
 .hist-modal {
@@ -252,16 +252,48 @@
 .hist-moto-qtd   { color: #475569; font-size: 0.75rem; }
 .hist-moto-total { color: #94a3b8; font-weight: 600; }
 
+/* Ações do modal (deletar + fechar) */
+.hist-modal-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.hist-btn-deletar {
+  width: 100%;
+  padding: 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(248,113,113,0.3);
+  background: rgba(248,113,113,0.08);
+  color: #f87171;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.hist-btn-deletar:hover:not(:disabled) {
+  background: rgba(248,113,113,0.16);
+  border-color: rgba(248,113,113,0.5);
+}
+.hist-btn-deletar:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* Botão fechar */
 .hist-fechar {
-  background: rgba(255,255,255,0.06);
+  width: 100%;
+  background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px; padding: 9px;
-  color: #94a3b8; font-size: 0.84rem; font-family: inherit;
-  font-weight: 600; cursor: pointer; transition: background 0.15s;
-  align-self: flex-end; min-width: 90px;
+  border-radius: 9px;
+  padding: 10px;
+  color: #94a3b8;
+  font-size: 0.84rem;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
 }
-.hist-fechar:hover { background: rgba(255,255,255,0.1); }
+.hist-fechar:hover { background: rgba(255,255,255,0.09); }
 
 /* Animação de entrada dos itens */
 .hist-item {

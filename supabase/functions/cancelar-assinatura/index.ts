@@ -47,33 +47,39 @@ serve(async (req: Request) => {
     return json({ error: 'Sem permissão.' }, 403)
   }
 
-  if (!perfil.assinatura_id) {
-    return json({ error: 'Nenhuma assinatura ativa encontrada.' }, 400)
-  }
-
   try {
-    // ── Cancela no Mercado Pago ───────────────────────────────────
-    const respMP = await fetch(
-      `https://api.mercadopago.com/preapproval/${perfil.assinatura_id}`,
-      {
-        method:  'PUT',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
-        },
-        body: JSON.stringify({ status: 'cancelled' }),
+    // ── Cancela no Mercado Pago (apenas se tiver assinatura_id) ──
+    if (perfil.assinatura_id) {
+      const respMP = await fetch(
+        `https://api.mercadopago.com/preapproval/${perfil.assinatura_id}`,
+        {
+          method:  'PUT',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${MP_ACCESS_TOKEN}`,
+          },
+          body: JSON.stringify({ status: 'cancelled' }),
+        }
+      )
+
+      const dadosMP = await respMP.json()
+      console.log('[cancelar-assinatura] MP status:', respMP.status, dadosMP.status)
+
+      if (!respMP.ok) {
+        // 404 = assinatura não existe no MP (ex: ativada manualmente no banco)
+        // Seguro cancelar só no banco pois não há cobrança ativa no MP
+        if (respMP.status === 404) {
+          console.log('[cancelar-assinatura] assinatura_id não encontrado no MP, cancelando apenas no banco')
+        } else {
+          // Qualquer outro erro (401, 500, etc) = problema real, aborta
+          throw new Error(`Mercado Pago ${respMP.status}: ${JSON.stringify(dadosMP)}`)
+        }
       }
-    )
-
-    const dadosMP = await respMP.json()
-    console.log('[cancelar-assinatura] MP status:', respMP.status, dadosMP.status)
-
-    if (!respMP.ok) {
-      throw new Error(`Mercado Pago ${respMP.status}: ${JSON.stringify(dadosMP)}`)
+    } else {
+      console.log('[cancelar-assinatura] sem assinatura_id, cancelando apenas no banco para:', user.id)
     }
 
     // ── Atualiza o Supabase: plano_ativo = false, mantém plano_expira_em ──
-    // O usuário continua tendo acesso até a data de expiração já gravada.
     const { error: updateError } = await supabase
       .from('perfis')
       .update({

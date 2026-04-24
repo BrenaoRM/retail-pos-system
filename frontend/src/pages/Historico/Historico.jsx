@@ -1,5 +1,6 @@
 // src/pages/Historico/Historico.jsx
 import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { listarFechamentos, deletarFechamento } from '../../lib/api';
 import { fmt } from '../../lib/format';
 import { useAuth } from '../../contexts/AuthContext';
@@ -199,14 +200,15 @@ export default function Historico() {
         </button>
       )}
 
-      {selecionado && (
+      {selecionado && createPortal(
         <ModalDetalhe
           f={selecionado}
           onFechar={() => setSelecionado(null)}
           podeDeletar={podeDeletar(selecionado)}
           onDeletar={handleDeletar}
           deletando={deletando}
-        />
+        />,
+        document.body
       )}
     </div>
   );

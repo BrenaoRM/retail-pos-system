@@ -14,8 +14,15 @@ import { supabase } from './supabaseClient';
  * @param {object} body Payload JSON
  */
 async function callFunction(fn, body = {}) {
-  const { data, error } = await supabase.functions.invoke(fn, { body });
-  if (error) throw new Error(error.message || 'Erro na requisição');
+  const { data, error } = await supabase.functions.invoke(fn, {
+    body,
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (error) {
+    // Tenta extrair mensagem de erro do contexto da Edge Function
+    const msg = error.context?.json?.error || error.message || 'Erro na requisição';
+    throw new Error(msg);
+  }
   return data;
 }
 
