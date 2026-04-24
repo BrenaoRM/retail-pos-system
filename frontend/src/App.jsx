@@ -66,7 +66,13 @@ function GuardaPlano({ children }) {
   const location = useLocation();
   if (loading) return <Carregando />;
   if (!user)   return <Navigate to="/login" replace />;
-  if (perfil && !perfil.plano_ativo && location.pathname !== '/plano') {
+
+  // Cancelado mas ainda dentro do período pago → permite acesso normalmente
+  const aindaAtivo = !perfil?.plano_ativo
+    && perfil?.plano_expira_em
+    && new Date(perfil.plano_expira_em) > new Date();
+
+  if (perfil && !perfil.plano_ativo && !aindaAtivo && location.pathname !== '/plano') {
     return <Navigate to="/plano" replace />;
   }
   return children;
@@ -119,7 +125,7 @@ function ModalAssinatura({ onFechar }) {
           </div>
           {perfil?.plano_expira_em && (
             <p className="assinatura-expira">
-              Renova em: {new Date(perfil.plano_expira_em).toLocaleDateString('pt-BR')}
+              {planoAtivo ? 'Renova em' : 'Acesso até'}: {new Date(perfil.plano_expira_em).toLocaleDateString('pt-BR')}
             </p>
           )}
         </div>
