@@ -47,17 +47,14 @@ Deno.serve(async (req: Request) => {
         sistDeliv, realDelivLiq, totalGasEnt, difDeliv,
         totalGeral, dataFechamento, motoboys,
         trocoInicial, maqSalao, dinheiroGaveta,
-        vendaWeb, vendaBundi, maqRetirada,
+        vendaWeb, vendaBundiA, vendaBundiB, maqRetirada,
       } = body;
 
       // Validações básicas no backend
       if (!sistSalao || sistSalao <= 0) {
         return json({ error: 'Vendas do salão inválidas' }, 400);
       }
-      if (!sistDeliv || sistDeliv <= 0) {
-        return json({ error: 'Vendas de delivery inválidas' }, 400);
-      }
-
+      // Delivery pode ser zero em dias sem delivery — sem validação de mínimo
       const { data, error } = await supabase
         .from('fechamentos')
         .insert([{
@@ -72,7 +69,7 @@ Deno.serve(async (req: Request) => {
           real_salao:      realSalao,
           dif_salao:       difSalao,
           venda_web:       vendaWeb ?? 0,
-          venda_app:       vendaBundi ?? 0,
+          venda_app:       (vendaBundiA ?? 0) + (vendaBundiB ?? 0),
           maq_retirada:    maqRetirada ?? 0,
           total_gas:       totalGasEnt ?? 0,
           real_deliv_liq:  realDelivLiq,
