@@ -62,17 +62,20 @@ function RotaProtegida({ children }) {
 }
 
 function GuardaPlano({ children }) {
-  const { user, perfil, loading } = useAuth();
+  const { user, perfil, loading, planoAtivo } = useAuth();
   const location = useLocation();
   if (loading) return <Carregando />;
   if (!user)   return <Navigate to="/login" replace />;
 
+  // Se o perfil ainda não carregou, bloqueia até ter a informação
+  if (!perfil) return <Carregando />;
+
   // Cancelado mas ainda dentro do período pago → permite acesso normalmente
-  const aindaAtivo = !perfil?.plano_ativo
-    && perfil?.plano_expira_em
+  const aindaAtivo = !perfil.plano_ativo
+    && perfil.plano_expira_em
     && new Date(perfil.plano_expira_em) > new Date();
 
-  if (perfil && !perfil.plano_ativo && !aindaAtivo && location.pathname !== '/plano') {
+  if (!planoAtivo && !aindaAtivo && location.pathname !== '/plano') {
     return <Navigate to="/plano" replace />;
   }
   return children;
