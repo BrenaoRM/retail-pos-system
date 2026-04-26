@@ -1,9 +1,4 @@
 // supabase/functions/convidar-funcionario/index.ts
-// ─────────────────────────────────────────────────────────────
-// Gerente convida funcionário.
-// Usa signUp normal (igual ao fluxo do gerente) para contornar
-// limitações da Admin API no plano gratuito do Supabase.
-// ─────────────────────────────────────────────────────────────
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -21,7 +16,6 @@ Deno.serve(async (req: Request) => {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) return json({ error: 'Não autenticado' }, 401);
 
-    // Cliente com anon key para validar o token do usuário logado
     const supabaseUser = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -31,13 +25,11 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
     if (authError || !user) return json({ error: 'Token inválido' }, 401);
 
-    // Cliente service role para consultas administrativas
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Verifica se quem chama é gerente
     const { data: perfil } = await supabase
       .from('perfis')
       .select('perfil')
@@ -61,7 +53,6 @@ Deno.serve(async (req: Request) => {
 
     const nomeTrimado = nome.trim();
 
-    // Verifica se email já existe
     const { data: existente } = await supabase
       .from('perfis')
       .select('id, email')
@@ -72,24 +63,16 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'Este email já está cadastrado no sistema' }, 409);
     }
 
-    // Senha temporária aleatória — funcionário vai trocar via "esqueci a senha"
     const senhaTemp = crypto.randomUUID();
 
-    // Usa signUp normal com anon key (mesmo fluxo que funciona para o gerente)
-    const supabaseAnon = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!
-    );
-
-    const { data: signUpData, error: signUpError } = await supabaseAnon.auth.signUp({
+    // Admin API cria usuário já confirmado (sem email de confirmação)
+    const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
       email,
       password: senhaTemp,
-      options: {
-        data: {
-          perfil: 'funcionario',
-          nome: nomeTrimado,
-        },
-        emailRedirectTo:  `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/auth-redirect.html`,
+      email_confirm: true,
+      user_metadata: {
+        perfil: 'funcionario',
+        nome: nomeTrimado,
       },
     });
 
@@ -98,20 +81,19 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'Erro ao criar funcionário: ' + signUpError.message }, 500);
     }
 
-    // Garante perfil como 'funcionario' via service role (fallback do trigger)
     if (signUpData?.user?.id) {
       const { error: upsertError } = await supabase
-      .from('perfis')
-      .upsert({
-        id: signUpData.user.id,
-        email,
-        nome: nomeTrimado,
-        perfil: 'funcionario',
-        ativo: true,
-        plano_ativo: false,
-        gerente_id: user.id,
-        atualizado_em: new Date().toISOString(), // 👈 adicionar isto
-      }, { onConflict: 'id' });
+        .from('perfis')
+        .upsert({
+          id: signUpData.user.id,
+          email,
+          nome: nomeTrimado,
+          perfil: 'funcionario',
+          ativo: true,
+          plano_ativo: false,
+          gerente_id: user.id,
+          atualizado_em: new Date().toISOString(),
+        }, { onConflict: 'id' });
 
       if (upsertError) {
         console.error('Erro no upsert do perfil:', upsertError);
@@ -119,6 +101,11 @@ Deno.serve(async (req: Request) => {
     }
 
     // Envia email de recuperação de senha para o funcionário definir a própria senha
+    const supabaseAnon = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    );
+
     const { error: resetError } = await supabaseAnon.auth.resetPasswordForEmail(email, {
       redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/auth-redirect.html`,
     });
