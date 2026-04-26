@@ -110,6 +110,7 @@ Deno.serve(async (req: Request) => {
         ativo: true,
         plano_ativo: false,
         gerente_id: user.id,
+        atualizado_em: new Date().toISOString(), // 👈 adicionar isto
       }, { onConflict: 'id' });
 
       if (upsertError) {
