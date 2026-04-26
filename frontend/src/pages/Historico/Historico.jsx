@@ -84,22 +84,66 @@ function ModalDetalhe({ f, onFechar, podeDeletar, onDeletar, deletando }) {
           </span>
         </div>
         <div className="hist-modal-grid">
+
+          {/* ── SALÃO ── */}
           <div className="hist-secao">
             <p className="hist-secao-titulo">🏠 Salão</p>
-            <div className="hist-linha"><span>Esperado</span><span>R$ {fmt(f.venda_sist)}</span></div>
-            <div className="hist-linha"><span>Realizado</span><span>R$ {fmt(f.real_salao)}</span></div>
-            <div className="hist-linha sub"><span>Excedente</span><span>R$ {fmt(f.excedente)}</span></div>
+
+            <p className="hist-secao-sub">Vendas</p>
+            <div className="hist-linha sub"><span>Sistema (mesas)</span><span>R$ {fmt(f.venda_sist)}</span></div>
+            {n(f.venda_retirada) > 0 && <>
+              <div className="hist-linha sub"><span>Retirada total</span><span>R$ {fmt(f.venda_retirada)}</span></div>
+              <div className="hist-linha sub pix"><span>↳ Pix automático</span><span>− R$ {fmt(f.pix_retirada)}</span></div>
+              <div className="hist-linha sub"><span>Retirada líquida</span><span>R$ {fmt(f.pix_retirada_aut)}</span></div>
+            </>}
+            <div className="hist-linha destaque"><span>Total esperado</span><span>R$ {fmt(n(f.venda_sist) + n(f.pix_retirada_aut ?? f.maq_retirada))}</span></div>
+
             <div className="hist-divider" />
-            <div className="hist-linha destaque"><span>Diferença</span><span>R$ {fmt(f.dif_salao)}</span></div>
+
+            <p className="hist-secao-sub">Recebido</p>
+            <div className="hist-linha sub"><span>Dinheiro (líq.)</span><span>R$ {fmt(n(f.dinheiro_gaveta) - n(f.troco_inicial))}</span></div>
+            <div className="hist-linha sub"><span>Maquininha salão</span><span>R$ {fmt(f.maq_salao)}</span></div>
+            <div className="hist-linha sub"><span>Maquininha retirada</span><span>R$ {fmt(f.maq_retirada)}</span></div>
+            {n(f.excedente) !== 0 && <div className="hist-linha sub"><span>Excedente</span><span>R$ {fmt(f.excedente)}</span></div>}
+            <div className="hist-linha destaque"><span>Total recebido</span><span>R$ {fmt(f.real_salao)}</span></div>
+
+            <div className="hist-divider" />
+            <div className="hist-linha destaque"><span>Diferença</span><span style={{ color: Math.abs(n(f.dif_salao)) < 1 ? '#34d399' : '#f87171' }}>R$ {fmt(f.dif_salao)}</span></div>
           </div>
+
+          {/* ── DELIVERY ── */}
           <div className="hist-secao">
             <p className="hist-secao-titulo">🛵 Delivery</p>
-            <div className="hist-linha"><span>Esperado</span><span>R$ {fmt(n(f.venda_web) + n(f.venda_app))}</span></div>
-            <div className="hist-linha"><span>Realizado</span><span>R$ {fmt(f.real_deliv_liq)}</span></div>
-            <div className="hist-linha sub"><span>Gasolina</span><span>R$ {fmt(f.total_gas)}</span></div>
+
+            <p className="hist-secao-sub">Vendas</p>
+            {n(f.venda_web) > 0 && <>
+              <div className="hist-linha sub"><span>Web Cardápio</span><span>R$ {fmt(f.venda_web)}</span></div>
+              <div className="hist-linha sub pix"><span>↳ Pix automático</span><span>− R$ {fmt(f.pix_web)}</span></div>
+              <div className="hist-linha sub"><span>Web líquido</span><span>R$ {fmt(f.pix_web_aut ?? (n(f.venda_web) - n(f.pix_web)))}</span></div>
+            </>}
+            {n(f.venda_brendi_a ?? f.venda_app) > 0 && <>
+              <div className="hist-linha sub"><span>Brendi Açaí</span><span>R$ {fmt(f.venda_brendi_a ?? 0)}</span></div>
+              <div className="hist-linha sub pix"><span>↳ Pix automático</span><span>− R$ {fmt(f.pix_brendi_a ?? 0)}</span></div>
+              <div className="hist-linha sub"><span>Brendi Açaí líq.</span><span>R$ {fmt(f.pix_brendi_a_aut ?? 0)}</span></div>
+            </>}
+            {n(f.venda_brendi_b) > 0 && <>
+              <div className="hist-linha sub"><span>Brendi Pizza/Hamb</span><span>R$ {fmt(f.venda_brendi_b)}</span></div>
+              <div className="hist-linha sub pix"><span>↳ Pix automático</span><span>− R$ {fmt(f.pix_brendi_b)}</span></div>
+              <div className="hist-linha sub"><span>Brendi Pizza líq.</span><span>R$ {fmt(f.pix_brendi_b_aut)}</span></div>
+            </>}
+            <div className="hist-linha destaque"><span>Total esperado</span><span>R$ {fmt(f.sist_deliv ?? (n(f.real_deliv_liq) - n(f.dif_deliv)))}</span></div>
+
             <div className="hist-divider" />
-            <div className="hist-linha destaque"><span>Diferença</span><span>R$ {fmt(f.dif_deliv)}</span></div>
+
+            <p className="hist-secao-sub">Recebido</p>
+            <div className="hist-linha sub"><span>Motoboys (maq+din)</span><span>R$ {fmt(n(f.real_deliv_liq) - n(f.total_gas))}</span></div>
+            {n(f.total_gas) > 0 && <div className="hist-linha sub"><span>Gasolina</span><span>R$ {fmt(f.total_gas)}</span></div>}
+            <div className="hist-linha destaque"><span>Total recebido</span><span>R$ {fmt(f.real_deliv_liq)}</span></div>
+
+            <div className="hist-divider" />
+            <div className="hist-linha destaque"><span>Diferença</span><span style={{ color: Math.abs(n(f.dif_deliv)) < 1 ? '#34d399' : '#f87171' }}>R$ {fmt(f.dif_deliv)}</span></div>
           </div>
+
         </div>
         {Array.isArray(f.motoboys) && f.motoboys.length > 0 && (
           <div className="hist-motoboys">

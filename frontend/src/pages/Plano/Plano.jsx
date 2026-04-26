@@ -94,7 +94,7 @@ export default function Plano() {
         <h1>Big Burguer Pro</h1>
         <p className="plano-sub">Comece grátis por 30 dias. Depois, apenas</p>
         <div style={styles.preco}>
-          <span style={styles.precoValor}>R$ 79,90</span>
+          <span style={styles.precoValor}>R$ 149,90</span>
           <span style={styles.precoSufixo}>/mês</span>
         </div>
         <div style={styles.trialBadge}>🎁 Primeiro mês totalmente grátis</div>

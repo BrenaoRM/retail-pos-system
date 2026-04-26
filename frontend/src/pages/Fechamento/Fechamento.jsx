@@ -16,6 +16,7 @@ export default function Fechamento() {
     copiando, copiado, confirmarNovo, subtotais,
     setEtapa, setAba, setSalao, setDelivery, setMotoboys, setBrendiAtivo,
     setConfirmarNovo,
+    observacao, setObservacao,
     resultadoRef, conteudoRef,
     onTouchStart, onTouchEnd, calcular, copiarImagem, novoFechamento,
   } = useFechamento();
@@ -52,6 +53,8 @@ export default function Fechamento() {
               motoboys={motoboys}
               copiando={copiando}
               copiado={copiado}
+              observacao={observacao}
+              onObservacaoChange={setObservacao}
               onVoltar={() => setEtapa('formulario')}
               onCopiar={copiarImagem}
               onNovoFechamento={() => setConfirmarNovo(true)}

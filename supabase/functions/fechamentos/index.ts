@@ -17,13 +17,11 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Cria cliente com a chave de serviço (acesso total ao banco)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Identifica o usuário pelo token JWT enviado pelo frontend
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return json({ error: 'Não autenticado' }, 401);
@@ -43,39 +41,72 @@ Deno.serve(async (req: Request) => {
     // ── Criar fechamento ──────────────────────────────────────
     if (action === 'criar') {
       const {
+        // Salão
         sistSalao, realSalao, excedente, difSalao,
+        trocoInicial, maqSalao, dinheiroGaveta, maqRetirada,
+        vendaRetirada, pixRetirada, pixRetiradaAuto,
+
+        // Delivery
         sistDeliv, realDelivLiq, totalGasEnt, difDeliv,
+        vendaWeb, pixWeb, pixWebAuto,
+        vendaBundiA, pixBundiA, pixBundiAAuto,
+        vendaBundiB, pixBundiB, pixBundiBAuto,
+
+        // Geral
         totalGeral, dataFechamento, motoboys,
-        trocoInicial, maqSalao, dinheiroGaveta,
-        vendaWeb, vendaBundiA, vendaBundiB, maqRetirada,
       } = body;
 
-      // Validações básicas no backend
       if (!sistSalao || sistSalao <= 0) {
         return json({ error: 'Vendas do salão inválidas' }, 400);
       }
-      // Delivery pode ser zero em dias sem delivery — sem validação de mínimo
+
       const { data, error } = await supabase
         .from('fechamentos')
         .insert([{
-          criado_por:      user.id,
-          data_referencia: dataFechamento,
-          data_fechamento: new Date().toISOString().split('T')[0],
-          venda_sist:      sistSalao,
-          troco_inicial:   trocoInicial ?? 0,
-          maq_salao:       maqSalao ?? 0,
-          dinheiro_gaveta: dinheiroGaveta ?? 0,
-          excedente,
-          real_salao:      realSalao,
-          dif_salao:       difSalao,
-          venda_web:       vendaWeb ?? 0,
-          venda_app:       (vendaBundiA ?? 0) + (vendaBundiB ?? 0),
-          maq_retirada:    maqRetirada ?? 0,
-          total_gas:       totalGasEnt ?? 0,
-          real_deliv_liq:  realDelivLiq,
-          dif_deliv:       difDeliv,
-          total_geral:     totalGeral,
-          motoboys:        motoboys ?? [],
+          criado_por:       user.id,
+          data_referencia:  dataFechamento,
+          data_fechamento:  new Date().toISOString().split('T')[0],
+
+          // Salão
+          venda_sist:       sistSalao,
+          troco_inicial:    trocoInicial    ?? 0,
+          maq_salao:        maqSalao        ?? 0,
+          dinheiro_gaveta:  dinheiroGaveta  ?? 0,
+          excedente:        excedente       ?? 0,
+          real_salao:       realSalao,
+          dif_salao:        difSalao,
+          maq_retirada:     maqRetirada     ?? 0,
+          venda_retirada:   vendaRetirada   ?? 0,
+          pix_retirada:     pixRetirada     ?? 0,
+          pix_retirada_aut: pixRetiradaAuto ?? 0,
+
+          // Delivery — totais
+          sist_deliv:       sistDeliv       ?? 0,
+          real_deliv_liq:   realDelivLiq,
+          total_gas:        totalGasEnt     ?? 0,
+          dif_deliv:        difDeliv,
+
+          // Delivery — Web Cardápio
+          venda_web:        vendaWeb        ?? 0,
+          pix_web:          pixWeb          ?? 0,
+          pix_web_aut:      pixWebAuto      ?? 0,
+
+          // Delivery — Brendi A
+          venda_brendi_a:   vendaBundiA     ?? 0,
+          pix_brendi_a:     pixBundiA       ?? 0,
+          pix_brendi_a_aut: pixBundiAAuto   ?? 0,
+
+          // Delivery — Brendi B
+          venda_brendi_b:   vendaBundiB     ?? 0,
+          pix_brendi_b:     pixBundiB       ?? 0,
+          pix_brendi_b_aut: pixBundiBAuto   ?? 0,
+
+          // Legado: venda_app = brendi A + B somados (mantido para compatibilidade)
+          venda_app:        (vendaBundiA ?? 0) + (vendaBundiB ?? 0),
+
+          // Geral
+          total_geral:      totalGeral,
+          motoboys:         motoboys ?? [],
         }])
         .select()
         .single();
@@ -93,7 +124,6 @@ Deno.serve(async (req: Request) => {
       const pagina = Number(body.pagina ?? 0);
       const limite = Math.min(Number(body.limite ?? 20), 100);
 
-      // Busca perfil do usuário para saber se é admin/gerente
       const { data: perfil } = await supabase
         .from('perfis')
         .select('perfil')
@@ -108,7 +138,6 @@ Deno.serve(async (req: Request) => {
         .order('criado_em', { ascending: false })
         .range(pagina * limite, (pagina + 1) * limite - 1);
 
-      // Funcionário comum só vê os próprios
       if (!isAdminOuGerente) {
         query = query.eq('criado_por', user.id);
       }
@@ -127,7 +156,6 @@ Deno.serve(async (req: Request) => {
       const { id } = body;
       if (!id) return json({ error: 'ID do fechamento é obrigatório' }, 400);
 
-      // Busca perfil do usuário
       const { data: perfil } = await supabase
         .from('perfis')
         .select('perfil')
@@ -136,7 +164,6 @@ Deno.serve(async (req: Request) => {
 
       const isAdminOuGerente = perfil?.perfil === 'admin' || perfil?.perfil === 'gerente';
 
-      // Busca o fechamento para validação
       const { data: fechamento } = await supabase
         .from('fechamentos')
         .select('criado_por, data_fechamento')
@@ -147,7 +174,6 @@ Deno.serve(async (req: Request) => {
         return json({ error: 'Fechamento não encontrado' }, 404);
       }
 
-      // Funcionário: só pode deletar o próprio e do dia atual
       if (!isAdminOuGerente) {
         if (fechamento.criado_por !== user.id) {
           return json({ error: 'Você não pode deletar fechamentos de outros funcionários' }, 403);

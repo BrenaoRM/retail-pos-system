@@ -479,3 +479,70 @@
   color: var(--c-subtle);
   margin-top: 2px;
 }
+
+.fc-hero-operador {
+  font-size: 0.78rem;
+  color: var(--c-subtle);
+  margin-top: 6px;
+}
+
+.fc-hero-operador strong {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
+.fc-observacao-wrap {
+  margin: 16px 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fc-observacao-label {
+  font-size: 0.8rem;
+  color: var(--c-subtle);
+  font-weight: 500;
+}
+
+.fc-observacao-input {
+  width: 100%;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  color: var(--c-text);
+  font-size: 0.88rem;
+  padding: 10px 12px;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.fc-observacao-input:focus {
+  outline: none;
+  border-color: var(--c-accent);
+}
+
+.fc-obs-screenshot {
+  margin-top: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fc-obs-screenshot-label {
+  font-size: 0.72rem;
+  color: var(--c-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fc-obs-screenshot-texto {
+  font-size: 0.85rem;
+  color: var(--c-text);
+  line-height: 1.5;
+}

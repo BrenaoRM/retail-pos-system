@@ -8,6 +8,7 @@ import React from 'react';
 import { LinhaResumo } from "../../components/LinhaResumo";
 import { IconStore, IconBike, IconCheck, IconAlert, IconCamera, IconRefresh } from "../../components/Icons";
 import { fmt } from "../../lib/format";
+import { useAuth } from "../../contexts/AuthContext";
 
 export function ResultadoFechamento({
   resultadoRef,
@@ -16,10 +17,14 @@ export function ResultadoFechamento({
   motoboys,
   copiando,
   copiado,
+  observacao,
+  onObservacaoChange,
   onVoltar,
   onCopiar,
   onNovoFechamento,
 }) {
+  const { perfil } = useAuth();
+  const nomeFuncionario = perfil?.nome || perfil?.email || 'Funcionário';
   const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
 
   return (
@@ -43,6 +48,7 @@ export function ResultadoFechamento({
               : 'Divergência encontrada'}
           </div>
           <div className="fc-hero-data">{relatorio.dataFechamento}</div>
+          <div className="fc-hero-operador">Fechado por: <strong>{nomeFuncionario}</strong></div>
         </div>
 
         {/* Cards de resumo */}
@@ -175,6 +181,24 @@ export function ResultadoFechamento({
             )}
           </div>
         </div>
+        {observacao ? (
+          <div className="fc-obs-screenshot">
+            <span className="fc-obs-screenshot-label">Observação:</span>
+            <span className="fc-obs-screenshot-texto">{observacao}</span>
+          </div>
+        ) : null}
+      </div>
+
+      {/* Campo de Observação */}
+      <div className="fc-observacao-wrap">
+        <label className="fc-observacao-label">Observação (opcional)</label>
+        <textarea
+          className="fc-observacao-input"
+          placeholder="Ex: caixa com moedas separadas, entregador saiu mais cedo..."
+          value={observacao}
+          onChange={e => onObservacaoChange(e.target.value)}
+          rows={3}
+        />
       </div>
 
       {/* Botões de Ação */}
