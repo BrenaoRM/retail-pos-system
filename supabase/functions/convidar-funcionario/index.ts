@@ -44,8 +44,8 @@ Deno.serve(async (req: Request) => {
       .eq('id', user.id)
       .single();
 
-    if (perfil?.perfil !== 'gerente') {
-      return json({ error: 'Apenas o gerente pode convidar funcionários' }, 403);
+    if (perfil?.perfil !== 'gerente' && perfil?.perfil !== 'admin') {
+      return json({ error: 'Apenas o gerente ou admin pode convidar funcionários' }, 403);
     }
 
     const body = await req.json();
