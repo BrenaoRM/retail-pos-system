@@ -150,24 +150,47 @@ export async function cancelarAssinatura() {
 
 // ── Entregadores ──────────────────────────────────────────────
 
-/** Lista todos os nomes de entregadores salvos do gerente */
-export async function listarEntregadores() {
+/**
+ * Retorna o gerente_id do usuário logado.
+ * - Se for gerente: retorna o próprio ID.
+ * - Se for funcionário: retorna o gerente_id do perfil dele.
+ */
+async function resolverGerenteId() {
   const { data: { user } } = await supabase.auth.getUser();
+  const { data: perfil, error } = await supabase
+    .from('perfis')
+    .select('perfil, gerente_id')
+    .eq('id', user.id)
+    .single();
+  if (error) throw error;
+  // Gerente usa o próprio ID; funcionário usa o gerente_id do seu perfil
+  return perfil.perfil === 'gerente' ? user.id : perfil.gerente_id;
+}
+
+/**
+ * Lista todos os nomes de entregadores do grupo (gerente + funcionários).
+ * Qualquer membro do grupo vê a mesma lista.
+ */
+export async function listarEntregadores() {
+  const gerenteId = await resolverGerenteId();
   const { data, error } = await supabase
     .from('nomes_entregadores')
     .select('id, nome')
-    .eq('gerente_id', user.id)
+    .eq('gerente_id', gerenteId)
     .order('nome', { ascending: true });
   if (error) throw error;
   return data;
 }
 
-/** Salva um novo nome de entregador (ignora se já existir) */
+/**
+ * Salva um novo nome de entregador vinculado ao gerente do grupo.
+ * Ignora silenciosamente se o nome já existir.
+ */
 export async function salvarEntregador(nome) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const gerenteId = await resolverGerenteId();
   const { error } = await supabase
     .from('nomes_entregadores')
-    .upsert({ gerente_id: user.id, nome: nome.trim() }, { onConflict: 'gerente_id,nome' });
+    .upsert({ gerente_id: gerenteId, nome: nome.trim() }, { onConflict: 'gerente_id,nome' });
   if (error) throw error;
 }
 
