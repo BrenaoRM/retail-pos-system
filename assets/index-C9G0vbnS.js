@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/Login-CvgSwqyr.js","assets/vendor-jF1s2-c6.js","assets/supabase-1T9tw6ve.js","assets/Login-P1K1hMeg.css","assets/Fechamento-3BTo2RZJ.js","assets/format-CcxP-_eH.js","assets/Fechamento-Cd0mKfRa.css","assets/Historico-BXKPcm44.js","assets/Historico-CV6QmbPa.css","assets/Plano-BmWIrVgd.js","assets/Plano-XQq3oUCK.css","assets/Equipe-DQqP3hTr.js","assets/Equipe-Cm_FHM0f.css","assets/RedefinirSenha-CDALPJ7p.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/Login-CBncAcq4.js","assets/vendor-jF1s2-c6.js","assets/supabase-1T9tw6ve.js","assets/Login-P1K1hMeg.css","assets/Fechamento-oQHhl1Mp.js","assets/format-CcxP-_eH.js","assets/Fechamento-Cd0mKfRa.css","assets/Historico-BqgvSNyY.js","assets/Historico-CV6QmbPa.css","assets/Plano-Dn60EiGL.js","assets/Plano-XQq3oUCK.css","assets/Equipe-B_oOI6S7.js","assets/Equipe-Cm_FHM0f.css","assets/RedefinirSenha-CaDhPYiO.js"])))=>i.map(i=>d[i]);
 import { r as reactExports, j as jsxRuntimeExports, R as React, u as useNavigate, a as useLocation, b as reactDomExports, H as HashRouter, c as Routes, d as Route, N as Navigate, e as ReactDOM } from './vendor-jF1s2-c6.js';
 import { c as createClient } from './supabase-1T9tw6ve.js';
 
@@ -304,9 +304,11 @@ async function cancelarAssinatura() {
 
 /** Lista todos os nomes de entregadores salvos do gerente */
 async function listarEntregadores() {
+  const { data: { user } } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from('nomes_entregadores')
     .select('id, nome')
+    .eq('gerente_id', user.id)
     .order('nome', { ascending: true });
   if (error) throw error;
   return data;
@@ -330,12 +332,12 @@ async function removerEntregador(id) {
   if (error) throw error;
 }
 
-const Login = reactExports.lazy(() => __vitePreload(() => import('./Login-CvgSwqyr.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0));
-const Fechamento = reactExports.lazy(() => __vitePreload(() => import('./Fechamento-3BTo2RZJ.js'),true              ?__vite__mapDeps([4,1,5,2,6]):void 0));
-const Historico = reactExports.lazy(() => __vitePreload(() => import('./Historico-BXKPcm44.js'),true              ?__vite__mapDeps([7,1,5,2,8]):void 0));
-const Plano = reactExports.lazy(() => __vitePreload(() => import('./Plano-BmWIrVgd.js'),true              ?__vite__mapDeps([9,1,2,10]):void 0));
-const Equipe = reactExports.lazy(() => __vitePreload(() => import('./Equipe-DQqP3hTr.js'),true              ?__vite__mapDeps([11,1,2,12]):void 0));
-const RedefinirSenha = reactExports.lazy(() => __vitePreload(() => import('./RedefinirSenha-CDALPJ7p.js'),true              ?__vite__mapDeps([13,1,2,3]):void 0));
+const Login = reactExports.lazy(() => __vitePreload(() => import('./Login-CBncAcq4.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0));
+const Fechamento = reactExports.lazy(() => __vitePreload(() => import('./Fechamento-oQHhl1Mp.js'),true              ?__vite__mapDeps([4,1,5,2,6]):void 0));
+const Historico = reactExports.lazy(() => __vitePreload(() => import('./Historico-BqgvSNyY.js'),true              ?__vite__mapDeps([7,1,5,2,8]):void 0));
+const Plano = reactExports.lazy(() => __vitePreload(() => import('./Plano-Dn60EiGL.js'),true              ?__vite__mapDeps([9,1,2,10]):void 0));
+const Equipe = reactExports.lazy(() => __vitePreload(() => import('./Equipe-B_oOI6S7.js'),true              ?__vite__mapDeps([11,1,2,12]):void 0));
+const RedefinirSenha = reactExports.lazy(() => __vitePreload(() => import('./RedefinirSenha-CaDhPYiO.js'),true              ?__vite__mapDeps([13,1,2,3]):void 0));
 const ToastContext = React.createContext(null);
 function ToastProvider({ children }) {
   const [toasts, setToasts] = reactExports.useState([]);
