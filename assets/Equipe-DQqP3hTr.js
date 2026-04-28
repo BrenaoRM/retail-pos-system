@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, f as listarFuncionarios, g as convidarFuncionario, h as removerFuncionario } from './index-C6ZEiERR.js';
+import { T as ToastContext, h as listarFuncionarios, i as convidarFuncionario, j as removerFuncionario } from './index-CiGUv3yS.js';
 import './supabase-1T9tw6ve.js';
 
 function SkeletonLista() {

@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, _ as __vitePreload, c as criarFechamento, u as useAuth } from './index-C6ZEiERR.js';
+import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-CiGUv3yS.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
@@ -32,7 +32,7 @@ const MOTOBOY_NOVO = (n) => ({
   gas: 0,
 });
 
-const STORAGE_KEY$1 = 'fechamento_rascunho';
+const STORAGE_KEY = 'fechamento_rascunho';
 
 // ── Funções Helper ────────────────────────────────────────────
 function dataReferencia() {
@@ -51,13 +51,13 @@ function dataReferencia() {
 
 function salvarRascunho(data) {
   try {
-    sessionStorage.setItem(STORAGE_KEY$1, JSON.stringify(data));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch {}
 }
 
 function carregarRascunho() {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY$1);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -308,7 +308,7 @@ function useFechamento() {
     setConfirmarNovo(false);
 
     try {
-      sessionStorage.removeItem(STORAGE_KEY$1);
+      sessionStorage.removeItem(STORAGE_KEY);
     } catch {}
   }
 
@@ -759,31 +759,12 @@ const IconCamera = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: 
   /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "13", r: "4" })
 ] });
 
-const STORAGE_KEY = "bb_nomes_motoboys";
-function getNomesSalvos() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
-function salvarNome(nome) {
-  const n = nome.trim();
-  if (n.length < 2) return;
-  const lista = getNomesSalvos();
-  if (!lista.includes(n)) {
-    lista.push(n);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-}
-function removerNome(nome) {
-  const lista = getNomesSalvos().filter((n) => n !== nome);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-}
 function MotoboyNomeInput({ value, onChange, placeholder }) {
   const [aberto, setAberto] = reactExports.useState(false);
   const [nomes, setNomes] = reactExports.useState([]);
+  const [carregando, setCarregando] = reactExports.useState(false);
   const wrapRef = reactExports.useRef(null);
+  const jaCarregou = reactExports.useRef(false);
   reactExports.useEffect(() => {
     function handler(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
@@ -793,31 +774,55 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-  const sugestoes = nomes.filter(
-    (n) => n.toLowerCase().includes(value.toLowerCase()) && n !== value.trim()
-  );
-  const nomeNovo = value.trim().length >= 2 && !nomes.includes(value.trim());
-  const mostrarDropdown = aberto && (sugestoes.length > 0 || nomeNovo);
-  function handleFocus() {
-    setNomes(getNomesSalvos());
-    setAberto(true);
+  async function carregarNomes() {
+    if (jaCarregou.current) return;
+    setCarregando(true);
+    try {
+      const lista = await listarEntregadores();
+      setNomes(lista);
+      jaCarregou.current = true;
+    } catch {
+    } finally {
+      setCarregando(false);
+    }
   }
-  function handleBlur() {
-    if (value.trim().length >= 2) {
-      salvarNome(value.trim());
-      setNomes(getNomesSalvos());
+  async function handleFocus() {
+    setAberto(true);
+    await carregarNomes();
+  }
+  async function handleBlur() {
+    const nomeLimpo = value.trim();
+    if (nomeLimpo.length < 2) return;
+    const jaExiste = nomes.some((n) => n.nome === nomeLimpo);
+    if (!jaExiste) {
+      try {
+        await salvarEntregador(nomeLimpo);
+        jaCarregou.current = false;
+        const lista = await listarEntregadores();
+        setNomes(lista);
+        jaCarregou.current = true;
+      } catch {
+      }
+    }
+  }
+  async function handleDeletar(e, entregador) {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await removerEntregador(entregador.id);
+      setNomes((prev) => prev.filter((n) => n.id !== entregador.id));
+    } catch {
     }
   }
   function selecionarNome(nome) {
     onChange(nome);
     setAberto(false);
   }
-  function handleDeletar(e, nome) {
-    e.preventDefault();
-    e.stopPropagation();
-    removerNome(nome);
-    setNomes(getNomesSalvos());
-  }
+  const sugestoes = nomes.filter(
+    (n) => n.nome.toLowerCase().includes(value.toLowerCase()) && n.nome !== value.trim()
+  );
+  const nomeNovo = value.trim().length >= 2 && !nomes.some((n) => n.nome === value.trim());
+  const mostrarDropdown = aberto && (carregando || sugestoes.length > 0 || nomeNovo);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-nome-wrap", ref: wrapRef, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "input",
@@ -833,28 +838,29 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
       }
     ),
     mostrarDropdown && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-sugestoes", children: [
-      sugestoes.map((nome) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      carregando && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "motoboy-sugestao-hint", children: "Carregando..." }),
+      !carregando && sugestoes.map((entregador) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "div",
         {
           className: "motoboy-sugestao-item",
-          onMouseDown: () => selecionarNome(nome),
+          onMouseDown: () => selecionarNome(entregador.nome),
           children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "motoboy-sugestao-nome", children: nome }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "motoboy-sugestao-nome", children: entregador.nome }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               "button",
               {
                 className: "motoboy-sugestao-del",
                 title: "Remover nome salvo",
-                onMouseDown: (e) => handleDeletar(e, nome),
+                onMouseDown: (e) => handleDeletar(e, entregador),
                 children: "✕"
               }
             )
           ]
         },
-        nome
+        entregador.id
       )),
-      nomeNovo && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-sugestao-hint", children: [
-        'Pressione Tab ou clique fora para salvar "',
+      !carregando && nomeNovo && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-sugestao-hint", children: [
+        'Será salvo ao confirmar "',
         value.trim(),
         '"'
       ] })

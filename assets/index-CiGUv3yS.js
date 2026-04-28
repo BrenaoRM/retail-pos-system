@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/Login-DZH-JUAE.js","assets/vendor-jF1s2-c6.js","assets/supabase-1T9tw6ve.js","assets/Login-P1K1hMeg.css","assets/Fechamento-DgMIJGOR.js","assets/format-CcxP-_eH.js","assets/Fechamento-Cd0mKfRa.css","assets/Historico-DvL32XDy.js","assets/Historico-CV6QmbPa.css","assets/Plano-DkKg2Dfx.js","assets/Plano-XQq3oUCK.css","assets/Equipe-6oDamEmZ.js","assets/Equipe-Cm_FHM0f.css","assets/RedefinirSenha-YY1sIRY9.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/Login-CvgSwqyr.js","assets/vendor-jF1s2-c6.js","assets/supabase-1T9tw6ve.js","assets/Login-P1K1hMeg.css","assets/Fechamento-3BTo2RZJ.js","assets/format-CcxP-_eH.js","assets/Fechamento-Cd0mKfRa.css","assets/Historico-BXKPcm44.js","assets/Historico-CV6QmbPa.css","assets/Plano-BmWIrVgd.js","assets/Plano-XQq3oUCK.css","assets/Equipe-DQqP3hTr.js","assets/Equipe-Cm_FHM0f.css","assets/RedefinirSenha-CDALPJ7p.js"])))=>i.map(i=>d[i]);
 import { r as reactExports, j as jsxRuntimeExports, R as React, u as useNavigate, a as useLocation, b as reactDomExports, H as HashRouter, c as Routes, d as Route, N as Navigate, e as ReactDOM } from './vendor-jF1s2-c6.js';
 import { c as createClient } from './supabase-1T9tw6ve.js';
 
@@ -300,12 +300,42 @@ async function cancelarAssinatura() {
   return callFunction('cancelar-assinatura', {});
 }
 
-const Login = reactExports.lazy(() => __vitePreload(() => import('./Login-DZH-JUAE.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0));
-const Fechamento = reactExports.lazy(() => __vitePreload(() => import('./Fechamento-DgMIJGOR.js'),true              ?__vite__mapDeps([4,1,5,2,6]):void 0));
-const Historico = reactExports.lazy(() => __vitePreload(() => import('./Historico-DvL32XDy.js'),true              ?__vite__mapDeps([7,1,5,2,8]):void 0));
-const Plano = reactExports.lazy(() => __vitePreload(() => import('./Plano-DkKg2Dfx.js'),true              ?__vite__mapDeps([9,1,2,10]):void 0));
-const Equipe = reactExports.lazy(() => __vitePreload(() => import('./Equipe-6oDamEmZ.js'),true              ?__vite__mapDeps([11,1,2,12]):void 0));
-const RedefinirSenha = reactExports.lazy(() => __vitePreload(() => import('./RedefinirSenha-YY1sIRY9.js'),true              ?__vite__mapDeps([13,1,2,3]):void 0));
+// ── Entregadores ──────────────────────────────────────────────
+
+/** Lista todos os nomes de entregadores salvos do gerente */
+async function listarEntregadores() {
+  const { data, error } = await supabase
+    .from('nomes_entregadores')
+    .select('id, nome')
+    .order('nome', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+/** Salva um novo nome de entregador (ignora se já existir) */
+async function salvarEntregador(nome) {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from('nomes_entregadores')
+    .upsert({ gerente_id: user.id, nome: nome.trim() }, { onConflict: 'gerente_id,nome' });
+  if (error) throw error;
+}
+
+/** Remove um nome de entregador pelo ID */
+async function removerEntregador(id) {
+  const { error } = await supabase
+    .from('nomes_entregadores')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
+
+const Login = reactExports.lazy(() => __vitePreload(() => import('./Login-CvgSwqyr.js'),true              ?__vite__mapDeps([0,1,2,3]):void 0));
+const Fechamento = reactExports.lazy(() => __vitePreload(() => import('./Fechamento-3BTo2RZJ.js'),true              ?__vite__mapDeps([4,1,5,2,6]):void 0));
+const Historico = reactExports.lazy(() => __vitePreload(() => import('./Historico-BXKPcm44.js'),true              ?__vite__mapDeps([7,1,5,2,8]):void 0));
+const Plano = reactExports.lazy(() => __vitePreload(() => import('./Plano-BmWIrVgd.js'),true              ?__vite__mapDeps([9,1,2,10]):void 0));
+const Equipe = reactExports.lazy(() => __vitePreload(() => import('./Equipe-DQqP3hTr.js'),true              ?__vite__mapDeps([11,1,2,12]):void 0));
+const RedefinirSenha = reactExports.lazy(() => __vitePreload(() => import('./RedefinirSenha-CDALPJ7p.js'),true              ?__vite__mapDeps([13,1,2,3]):void 0));
 const ToastContext = React.createContext(null);
 function ToastProvider({ children }) {
   const [toasts, setToasts] = reactExports.useState([]);
@@ -526,4 +556,4 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   /* @__PURE__ */ jsxRuntimeExports.jsx(React.StrictMode, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(App, {}) })
 );
 
-export { ToastContext as T, __vitePreload as _, recuperarSenha as a, listarFechamentos as b, criarFechamento as c, deletarFechamento as d, criarAssinaturaMp as e, listarFuncionarios as f, convidarFuncionario as g, removerFuncionario as h, login as l, registrar as r, supabase as s, useAuth as u };
+export { ToastContext as T, __vitePreload as _, recuperarSenha as a, listarEntregadores as b, criarFechamento as c, removerEntregador as d, listarFechamentos as e, deletarFechamento as f, criarAssinaturaMp as g, listarFuncionarios as h, convidarFuncionario as i, removerFuncionario as j, supabase as k, login as l, registrar as r, salvarEntregador as s, useAuth as u };
