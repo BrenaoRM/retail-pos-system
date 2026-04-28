@@ -147,3 +147,33 @@ export async function criarAssinaturaMp({ userId, userEmail }) {
 export async function cancelarAssinatura() {
   return callFunction('cancelar-assinatura', {});
 }
+
+// ── Entregadores ──────────────────────────────────────────────
+
+/** Lista todos os nomes de entregadores salvos do gerente */
+export async function listarEntregadores() {
+  const { data, error } = await supabase
+    .from('nomes_entregadores')
+    .select('id, nome')
+    .order('nome', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+/** Salva um novo nome de entregador (ignora se já existir) */
+export async function salvarEntregador(nome) {
+  const { data: { user } } = await supabase.auth.getUser();
+  const { error } = await supabase
+    .from('nomes_entregadores')
+    .upsert({ gerente_id: user.id, nome: nome.trim() }, { onConflict: 'gerente_id,nome' });
+  if (error) throw error;
+}
+
+/** Remove um nome de entregador pelo ID */
+export async function removerEntregador(id) {
+  const { error } = await supabase
+    .from('nomes_entregadores')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}

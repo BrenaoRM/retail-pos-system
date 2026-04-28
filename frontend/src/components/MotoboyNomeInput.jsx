@@ -1,39 +1,20 @@
 /**
  * MotoboyNomeInput
  * Input com autocomplete para nome de entregadores.
- * Salva nomes novos no localStorage e permite apagar os salvos.
+ * Salva e busca nomes no banco de dados (Supabase).
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-
-const STORAGE_KEY = 'bb_nomes_motoboys';
-
-function getNomesSalvos() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
-}
-
-function salvarNome(nome) {
-  const n = nome.trim();
-  if (n.length < 2) return;
-  const lista = getNomesSalvos();
-  if (!lista.includes(n)) {
-    lista.push(n);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-  }
-}
-
-function removerNome(nome) {
-  const lista = getNomesSalvos().filter(n => n !== nome);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
-}
+import { listarEntregadores, salvarEntregador, removerEntregador } from '../lib/api';
 
 export function MotoboyNomeInput({ value, onChange, placeholder }) {
-  const [aberto, setAberto]       = useState(false);
-  const [nomes, setNomes]         = useState([]);
-  const wrapRef                   = useRef(null);
+  const [aberto, setAberto]   = useState(false);
+  const [nomes, setNomes]     = useState([]); // [{ id, nome }]
+  const [carregando, setCarregando] = useState(false);
+  const wrapRef = useRef(null);
+  const jaCarregou = useRef(false);
 
-  // fecha dropdown ao clicar fora
+  // Fecha dropdown ao clicar fora
   useEffect(() => {
     function handler(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
@@ -44,25 +25,53 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const sugestoes = nomes.filter(
-    n => n.toLowerCase().includes(value.toLowerCase()) && n !== value.trim()
-  );
-
-  // nome digitado é novo (ainda não salvo) e tem tamanho suficiente
-  const nomeNovo = value.trim().length >= 2 && !nomes.includes(value.trim());
-
-  const mostrarDropdown = aberto && (sugestoes.length > 0 || nomeNovo);
-
-  function handleFocus() {
-    setNomes(getNomesSalvos());
-    setAberto(true);
+  async function carregarNomes() {
+    if (jaCarregou.current) return;
+    setCarregando(true);
+    try {
+      const lista = await listarEntregadores();
+      setNomes(lista);
+      jaCarregou.current = true;
+    } catch {
+      // silencioso — não bloqueia o uso
+    } finally {
+      setCarregando(false);
+    }
   }
 
-  function handleBlur() {
-    // salva o nome ao sair do campo
-    if (value.trim().length >= 2) {
-      salvarNome(value.trim());
-      setNomes(getNomesSalvos());
+  async function handleFocus() {
+    setAberto(true);
+    await carregarNomes();
+  }
+
+  async function handleBlur() {
+    const nomeLimpo = value.trim();
+    if (nomeLimpo.length < 2) return;
+
+    // Só salva se for nome novo
+    const jaExiste = nomes.some(n => n.nome === nomeLimpo);
+    if (!jaExiste) {
+      try {
+        await salvarEntregador(nomeLimpo);
+        // Atualiza lista local sem precisar recarregar tudo
+        jaCarregou.current = false;
+        const lista = await listarEntregadores();
+        setNomes(lista);
+        jaCarregou.current = true;
+      } catch {
+        // silencioso
+      }
+    }
+  }
+
+  async function handleDeletar(e, entregador) {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await removerEntregador(entregador.id);
+      setNomes(prev => prev.filter(n => n.id !== entregador.id));
+    } catch {
+      // silencioso
     }
   }
 
@@ -71,12 +80,11 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
     setAberto(false);
   }
 
-  function handleDeletar(e, nome) {
-    e.preventDefault();
-    e.stopPropagation();
-    removerNome(nome);
-    setNomes(getNomesSalvos());
-  }
+  const sugestoes = nomes.filter(
+    n => n.nome.toLowerCase().includes(value.toLowerCase()) && n.nome !== value.trim()
+  );
+  const nomeNovo = value.trim().length >= 2 && !nomes.some(n => n.nome === value.trim());
+  const mostrarDropdown = aberto && (carregando || sugestoes.length > 0 || nomeNovo);
 
   return (
     <div className="motoboy-nome-wrap" ref={wrapRef}>
@@ -93,26 +101,30 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
 
       {mostrarDropdown && (
         <div className="motoboy-sugestoes">
-          {sugestoes.map(nome => (
+          {carregando && (
+            <div className="motoboy-sugestao-hint">Carregando...</div>
+          )}
+
+          {!carregando && sugestoes.map(entregador => (
             <div
-              key={nome}
+              key={entregador.id}
               className="motoboy-sugestao-item"
-              onMouseDown={() => selecionarNome(nome)}
+              onMouseDown={() => selecionarNome(entregador.nome)}
             >
-              <span className="motoboy-sugestao-nome">{nome}</span>
+              <span className="motoboy-sugestao-nome">{entregador.nome}</span>
               <button
                 className="motoboy-sugestao-del"
                 title="Remover nome salvo"
-                onMouseDown={e => handleDeletar(e, nome)}
+                onMouseDown={e => handleDeletar(e, entregador)}
               >
                 ✕
               </button>
             </div>
           ))}
 
-          {nomeNovo && (
+          {!carregando && nomeNovo && (
             <div className="motoboy-sugestao-hint">
-              Pressione Tab ou clique fora para salvar "{value.trim()}"
+              Será salvo ao confirmar "{value.trim()}"
             </div>
           )}
         </div>
