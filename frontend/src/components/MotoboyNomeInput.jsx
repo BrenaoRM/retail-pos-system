@@ -8,11 +8,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { listarEntregadores, salvarEntregador, removerEntregador } from '../lib/api';
 
 export function MotoboyNomeInput({ value, onChange, placeholder }) {
-  const [aberto, setAberto]   = useState(false);
-  const [nomes, setNomes]     = useState([]); // [{ id, nome }]
+  const [aberto, setAberto]         = useState(false);
+  const [nomes, setNomes]           = useState([]);
   const [carregando, setCarregando] = useState(false);
-  const wrapRef = useRef(null);
-  const jaCarregou = useRef(false);
+  const [erro, setErro]             = useState(false);
+  const wrapRef       = useRef(null);
+  const clicandoItem  = useRef(false); // true enquanto o mouse está pressionado em uma sugestão
 
   // Fecha dropdown ao clicar fora
   useEffect(() => {
@@ -26,14 +27,13 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
   }, []);
 
   async function carregarNomes() {
-    if (jaCarregou.current) return;
     setCarregando(true);
+    setErro(false);
     try {
       const lista = await listarEntregadores();
-      setNomes(lista);
-      jaCarregou.current = true;
+      setNomes(lista ?? []);
     } catch {
-      // silencioso — não bloqueia o uso
+      setErro(true);
     } finally {
       setCarregando(false);
     }
@@ -45,6 +45,11 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
   }
 
   async function handleBlur() {
+    // Se o usuário está clicando em uma sugestão, não processa o blur agora
+    if (clicandoItem.current) return;
+
+    setAberto(false);
+
     const nomeLimpo = value.trim();
     if (nomeLimpo.length < 2) return;
 
@@ -53,13 +58,10 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
     if (!jaExiste) {
       try {
         await salvarEntregador(nomeLimpo);
-        // Atualiza lista local sem precisar recarregar tudo
-        jaCarregou.current = false;
         const lista = await listarEntregadores();
-        setNomes(lista);
-        jaCarregou.current = true;
+        setNomes(lista ?? []);
       } catch {
-        // silencioso
+        // silencioso — não bloqueia o uso
       }
     }
   }
@@ -78,13 +80,17 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
   function selecionarNome(nome) {
     onChange(nome);
     setAberto(false);
+    clicandoItem.current = false;
   }
 
   const sugestoes = nomes.filter(
     n => n.nome.toLowerCase().includes(value.toLowerCase()) && n.nome !== value.trim()
   );
   const nomeNovo = value.trim().length >= 2 && !nomes.some(n => n.nome === value.trim());
-  const mostrarDropdown = aberto && (carregando || sugestoes.length > 0 || nomeNovo);
+
+  // Dropdown abre sempre que o campo está focado (aberto=true),
+  // mesmo com lista vazia — para mostrar estado de carregando/erro/nomeNovo
+  const mostrarDropdown = aberto && (carregando || erro || sugestoes.length > 0 || nomeNovo);
 
   return (
     <div className="motoboy-nome-wrap" ref={wrapRef}>
@@ -105,24 +111,36 @@ export function MotoboyNomeInput({ value, onChange, placeholder }) {
             <div className="motoboy-sugestao-hint">Carregando...</div>
           )}
 
-          {!carregando && sugestoes.map(entregador => (
+          {!carregando && erro && (
+            <div className="motoboy-sugestao-hint">Erro ao carregar. Tente novamente.</div>
+          )}
+
+          {!carregando && !erro && sugestoes.map(entregador => (
             <div
               key={entregador.id}
               className="motoboy-sugestao-item"
-              onMouseDown={() => selecionarNome(entregador.nome)}
+              onMouseDown={() => {
+                clicandoItem.current = true;
+                selecionarNome(entregador.nome);
+              }}
+              onMouseUp={() => { clicandoItem.current = false; }}
             >
               <span className="motoboy-sugestao-nome">{entregador.nome}</span>
               <button
                 className="motoboy-sugestao-del"
                 title="Remover nome salvo"
-                onMouseDown={e => handleDeletar(e, entregador)}
+                onMouseDown={e => {
+                  clicandoItem.current = true;
+                  handleDeletar(e, entregador);
+                }}
+                onMouseUp={() => { clicandoItem.current = false; }}
               >
                 ✕
               </button>
             </div>
           ))}
 
-          {!carregando && nomeNovo && (
+          {!carregando && !erro && nomeNovo && (
             <div className="motoboy-sugestao-hint">
               Será salvo ao confirmar "{value.trim()}"
             </div>
