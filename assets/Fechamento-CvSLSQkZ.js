@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-DZX7-pVb.js';
+import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-aXdZPZ10.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
@@ -763,8 +763,9 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
   const [aberto, setAberto] = reactExports.useState(false);
   const [nomes, setNomes] = reactExports.useState([]);
   const [carregando, setCarregando] = reactExports.useState(false);
+  const [erro, setErro] = reactExports.useState(false);
   const wrapRef = reactExports.useRef(null);
-  const jaCarregou = reactExports.useRef(false);
+  const clicandoItem = reactExports.useRef(false);
   reactExports.useEffect(() => {
     function handler(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
@@ -775,13 +776,13 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
   async function carregarNomes() {
-    if (jaCarregou.current) return;
     setCarregando(true);
+    setErro(false);
     try {
       const lista = await listarEntregadores();
-      setNomes(lista);
-      jaCarregou.current = true;
+      setNomes(lista ?? []);
     } catch {
+      setErro(true);
     } finally {
       setCarregando(false);
     }
@@ -791,16 +792,16 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
     await carregarNomes();
   }
   async function handleBlur() {
+    if (clicandoItem.current) return;
+    setAberto(false);
     const nomeLimpo = value.trim();
     if (nomeLimpo.length < 2) return;
     const jaExiste = nomes.some((n) => n.nome === nomeLimpo);
     if (!jaExiste) {
       try {
         await salvarEntregador(nomeLimpo);
-        jaCarregou.current = false;
         const lista = await listarEntregadores();
-        setNomes(lista);
-        jaCarregou.current = true;
+        setNomes(lista ?? []);
       } catch {
       }
     }
@@ -817,12 +818,13 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
   function selecionarNome(nome) {
     onChange(nome);
     setAberto(false);
+    clicandoItem.current = false;
   }
   const sugestoes = nomes.filter(
     (n) => n.nome.toLowerCase().includes(value.toLowerCase()) && n.nome !== value.trim()
   );
   const nomeNovo = value.trim().length >= 2 && !nomes.some((n) => n.nome === value.trim());
-  const mostrarDropdown = aberto && (carregando || sugestoes.length > 0 || nomeNovo);
+  const mostrarDropdown = aberto && (carregando || erro || sugestoes.length > 0 || nomeNovo);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-nome-wrap", ref: wrapRef, children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(
       "input",
@@ -839,11 +841,18 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
     ),
     mostrarDropdown && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-sugestoes", children: [
       carregando && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "motoboy-sugestao-hint", children: "Carregando..." }),
-      !carregando && sugestoes.map((entregador) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      !carregando && erro && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "motoboy-sugestao-hint", children: "Erro ao carregar. Tente novamente." }),
+      !carregando && !erro && sugestoes.map((entregador) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "div",
         {
           className: "motoboy-sugestao-item",
-          onMouseDown: () => selecionarNome(entregador.nome),
+          onMouseDown: () => {
+            clicandoItem.current = true;
+            selecionarNome(entregador.nome);
+          },
+          onMouseUp: () => {
+            clicandoItem.current = false;
+          },
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "motoboy-sugestao-nome", children: entregador.nome }),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -851,7 +860,13 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
               {
                 className: "motoboy-sugestao-del",
                 title: "Remover nome salvo",
-                onMouseDown: (e) => handleDeletar(e, entregador),
+                onMouseDown: (e) => {
+                  clicandoItem.current = true;
+                  handleDeletar(e, entregador);
+                },
+                onMouseUp: () => {
+                  clicandoItem.current = false;
+                },
                 children: "✕"
               }
             )
@@ -859,7 +874,7 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
         },
         entregador.id
       )),
-      !carregando && nomeNovo && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-sugestao-hint", children: [
+      !carregando && !erro && nomeNovo && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-sugestao-hint", children: [
         'Será salvo ao confirmar "',
         value.trim(),
         '"'
