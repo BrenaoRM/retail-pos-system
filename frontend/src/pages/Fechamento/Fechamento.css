@@ -227,6 +227,82 @@
   padding-bottom: 2px;
 }
 
+/* ── Autocomplete nome motoboy ── */
+.motoboy-nome-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.motoboy-nome-wrap .motoboy-nome {
+  width: 100%;
+}
+
+.motoboy-sugestoes {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #1e293b;
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  z-index: 30;
+  animation: sugest-entra 0.12s ease both;
+}
+
+@keyframes sugest-entra {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.motoboy-sugestao-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.motoboy-sugestao-item:hover {
+  background: rgba(251, 146, 60, 0.08);
+}
+
+.motoboy-sugestao-nome {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-text);
+  flex: 1;
+}
+
+.motoboy-sugestao-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--c-subtle);
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  line-height: 1;
+  transition: color 0.12s, background 0.12s;
+  flex-shrink: 0;
+}
+
+.motoboy-sugestao-del:hover {
+  color: var(--c-alerta);
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.motoboy-sugestao-hint {
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  color: var(--c-subtle);
+  font-style: italic;
+  border-top: 1px solid var(--c-border);
+}
+
 .motoboy-campos {
   display: grid; grid-template-columns: 1fr 1fr;
   gap: 6px;

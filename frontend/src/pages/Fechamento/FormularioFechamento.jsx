@@ -9,6 +9,7 @@ import { Campo } from "../../components/Campo";
 import { CalcAuto } from "../../components/CalcAuto";
 import { IconStore, IconBike } from "../../components/Icons";
 import { fmt } from "../../lib/format";
+import { MotoboyNomeInput } from "../../components/MotoboyNomeInput";
 
 const ABAS = [
   { id: 'salao', label: 'Salão', Icon: IconStore },
@@ -96,7 +97,7 @@ export function FormularioFechamento({
   function addMotoboy() {
     onMotoboysChange([
       ...motoboys,
-      { nome: `Entregador ${motoboys.length + 1}`, qtd: 0, maq: 0, din: 0, gas: 0 },
+      { nome: ``, qtd: 0, maq: 0, din: 0, gas: 0 },
     ]);
   }
 
@@ -356,14 +357,10 @@ export function FormularioFechamento({
                       <div className="motoboy-avatar">
                         {m.nome.charAt(0).toUpperCase()}
                       </div>
-                      <input
-                        className="motoboy-nome"
-                        type="text"
+                      <MotoboyNomeInput
                         value={m.nome}
                         placeholder={`Entregador ${i + 1}`}
-                        onChange={(e) =>
-                          editarMotoboy(i, 'nome', e.target.value)
-                        }
+                        onChange={(v) => editarMotoboy(i, 'nome', v)}
                       />
                     </div>
                     <div className="motoboy-campos">

@@ -29,7 +29,7 @@ export const DELIVERY_VAZIO = {
 };
 
 export const MOTOBOY_NOVO = (n) => ({
-  nome: `Entregador ${n}`,
+  nome: ``,
   qtd: 0,
   maq: 0,
   din: 0,
