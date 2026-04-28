@@ -51,13 +51,23 @@ Deno.serve(async (req: Request) => {
 
     // ── Listar funcionários ───────────────────────────────────
     if (action === 'listar') {
-      const { data, error } = await supabase
+      // Admin vê todos; gerente vê apenas os funcionários que ele convidou
+      let query = supabase
         .from('perfis')
-        .select('id, nome, email, perfil, ativo, criado_em')
+        .select('id, nome, email, perfil, ativo, criado_em, gerente_id')
         .eq('perfil', 'funcionario')
         .order('criado_em', { ascending: false });
 
-      if (error) return json({ error: 'Erro ao listar funcionários' }, 500);
+      if (perfil?.perfil === 'gerente') {
+        query = query.eq('gerente_id', user.id);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Erro ao listar funcionários:', error);
+        return json({ error: 'Erro ao listar funcionários' }, 500);
+      }
 
       return json({ funcionarios: data ?? [] });
     }
@@ -76,12 +86,17 @@ Deno.serve(async (req: Request) => {
       // Confirma que o alvo é realmente um funcionário
       const { data: alvo } = await supabase
         .from('perfis')
-        .select('perfil')
+        .select('perfil, gerente_id')
         .eq('id', funcionarioId)
         .single();
 
       if (alvo?.perfil !== 'funcionario') {
         return json({ error: 'Usuário não é um funcionário' }, 400);
+      }
+
+      // Gerente só pode remover funcionários que ele mesmo convidou
+      if (perfil?.perfil === 'gerente' && alvo?.gerente_id !== user.id) {
+        return json({ error: 'Você só pode remover funcionários que convidou' }, 403);
       }
 
       // Remove do auth (cascata deleta o perfil também via ON DELETE CASCADE)
