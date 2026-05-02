@@ -118,7 +118,17 @@
   flex-shrink: 0;
   line-height: 1;
 }
-.hist-metrica-titulo {
+
+/* Wrapper interno do card — usado pelo JSX (<div> sem classe explícita) */
+.hist-metrica-card > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* JSX usa .hist-metrica-label e .hist-metrica-valor e .hist-metrica-sub */
+.hist-metrica-label,
+.hist-metrica-titulo {          /* alias para compatibilidade */
   font-size: 0.7rem;
   color: #64748b;
   font-weight: 600;
@@ -239,7 +249,6 @@
 }
 
 /* Pizza */
-.hist-grafico-card--pizza {}
 .hist-pizza-wrap {
   display: flex;
   align-items: center;
@@ -377,14 +386,20 @@
   overflow-y: auto;
   display: flex; flex-direction: column; gap: 16px;
 }
-.hist-modal-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.hist-modal-topo {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+}
 .hist-modal-data { font-size: 0.95rem; font-weight: 700; color: #f1f5f9; margin: 0; }
 .hist-modal-autor { font-size: 0.78rem; color: #64748b; margin: 3px 0 0; }
 .hist-total { font-size: 1.2rem; font-weight: 800; flex-shrink: 0; }
 .hist-total--ok     { color: #34d399; }
 .hist-total--alerta { color: #f87171; }
 
-.hist-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.hist-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
 @media (max-width: 420px) { .hist-modal-grid { grid-template-columns: 1fr; } }
 
 .hist-secao {
@@ -403,12 +418,41 @@
   text-transform: uppercase; letter-spacing: 0.05em;
   margin: 8px 0 2px;
 }
-.hist-linha { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; }
-.hist-linha.sub      { font-size: 0.75rem; color: #475569; padding-left: 8px; }
-.hist-linha.pix      { font-size: 0.72rem; color: #334155; padding-left: 16px; font-style: italic; }
-.hist-linha.destaque { color: #f1f5f9; font-weight: 700; }
-.hist-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 6px 0; }
 
+/* ── Linhas do modal ── */
+.hist-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.hist-linha span:first-child { flex: 1; }
+.hist-linha span:last-child  { white-space: nowrap; }
+
+.hist-linha.sub {
+  font-size: 0.75rem;
+  color: #475569;
+  padding-left: 8px;
+}
+.hist-linha.pix {
+  font-size: 0.72rem;
+  color: #334155;
+  padding-left: 16px;
+  font-style: italic;
+}
+.hist-linha.destaque {
+  color: #f1f5f9;
+  font-weight: 700;
+}
+.hist-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 6px 0;
+}
+
+/* ── Seção motoboys no modal ── */
 .hist-motoboys {
   background: rgba(0,0,0,0.15);
   border: 1px solid rgba(255,255,255,0.07);
@@ -416,12 +460,20 @@
   padding: 14px;
   display: flex; flex-direction: column; gap: 8px;
 }
-.hist-motoboy-linha { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; }
+.hist-motoboy-linha {
+  display: flex; align-items: center; gap: 8px; font-size: 0.82rem;
+}
 .hist-moto-nome  { flex: 1; color: #e2e8f0; font-weight: 600; }
 .hist-moto-qtd   { color: #475569; font-size: 0.75rem; }
 .hist-moto-total { color: #94a3b8; font-weight: 600; }
 
-.hist-modal-acoes { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+/* ── Ações do modal ── */
+.hist-modal-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
 .hist-btn-deletar {
   width: 100%; padding: 10px;
   border-radius: 9px; border: 1px solid rgba(248,113,113,0.3);
@@ -445,5 +497,5 @@
 
 @keyframes item-entra {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0);   }
+  to   { opacity: 1; transform: translateY(0); }
 }
