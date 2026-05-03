@@ -8,7 +8,7 @@ import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { Campo } from "../../components/Campo";
 import { CalcAuto } from "../../components/CalcAuto";
 import { IconStore, IconBike } from "../../components/Icons";
-import { fmt } from "../../lib/format";
+import { fmt, parse } from "../../lib/format";
 import { MotoboyNomeInput } from "../../components/MotoboyNomeInput";
 
 const ABAS = [
@@ -87,10 +87,15 @@ export function FormularioFechamento({
 
   function editarMotoboy(i, campo, val) {
     const next = [...motoboys];
-    next[i] = {
-      ...next[i],
-      [campo]: campo === 'nome' ? val : Number(val) || 0,
-    };
+    // Aceita string enquanto o usuário digita (ex: "1,5"), converte no onBlur
+    const parsed = campo === 'nome'
+      ? val
+      : (typeof val === 'string' && isNaN(Number(val.replace(',', '.'))))
+        ? val  // mantém string temporária durante digitação
+        : campo === 'qtd'
+          ? (parseInt(val) || 0)
+          : (typeof val === 'number' ? val : (parseFloat(String(val).replace(',', '.')) || 0));
+    next[i] = { ...next[i], [campo]: parsed };
     onMotoboysChange(next);
   }
 
@@ -385,12 +390,24 @@ export function FormularioFechamento({
                         <div key={campo} className="motoboy-campo">
                           <span>{lbl}</span>
                           <input
-                            type="number"
+                            type="text"
+                            inputMode={campo === 'qtd' ? 'numeric' : 'decimal'}
                             placeholder="0"
                             value={m[campo] || ''}
-                            onChange={(e) =>
-                              editarMotoboy(i, campo, e.target.value)
-                            }
+                            onChange={(e) => {
+                              // Trata ponto como vírgula para campos monetários no celular
+                              const raw = campo === 'qtd'
+                                ? e.target.value.replace(/[^0-9]/g, '')
+                                : e.target.value.replace('.', ',').replace(/[^0-9,]/g, '');
+                              editarMotoboy(i, campo, raw);
+                            }}
+                            onBlur={(e) => {
+                              // Ao sair do campo, converte para número
+                              const num = campo === 'qtd'
+                                ? parseInt(e.target.value) || 0
+                                : parse(e.target.value);
+                              editarMotoboy(i, campo, num);
+                            }}
                           />
                         </div>
                       ))}

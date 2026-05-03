@@ -32,8 +32,10 @@ export function Campo({ label, hint, value, onChange, erro }) {
             setDisplay(value ? String(value).replace('.', ',') : '');
           }}
           onChange={e => {
-            setDisplay(e.target.value);
-            onChange(parse(e.target.value));
+            // Trata ponto como vírgula (teclado numérico do celular)
+            const raw = e.target.value.replace('.', ',');
+            setDisplay(raw);
+            onChange(parse(raw));
           }}
           onBlur={() => {
             setFocused(false);
