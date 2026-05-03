@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { useFechamento } from '../../hooks/useFechamento';
+import { useFechamento } from './useFechamento';
 import { Modal } from '../../components/Modal';
 import Calculadora from '../../components/Calculadora/Calculadora';
 import { FormularioFechamento } from './FormularioFechamento';

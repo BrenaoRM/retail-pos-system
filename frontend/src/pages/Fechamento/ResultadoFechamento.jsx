@@ -73,12 +73,6 @@ function RaioXSalao({ relatorio }) {
             value={pixRetiradaAuto}
             hint={`${fmt(vendaRetirada)} total − ${fmt(pixRetirada)} pix automático`}
           />
-          <LinhaCalculo
-            sinal="−"
-            label="Excedente funcionários"
-            value={excedente}
-            hint="valor já cobrado a mais, desconta do esperado"
-          />
           <LinhaSoma label="= Total esperado" value={totalVendasSalao} />
         </div>
       </div>
@@ -106,6 +100,12 @@ function RaioXSalao({ relatorio }) {
             label="Abastecimento"
             value={abastecimento}
             hint="valor retirado para veículos"
+          />
+          <LinhaCalculo
+            sinal="+"
+            label="Excedente funcionários"
+            value={excedente}
+            hint="valor cobrado a mais, subtrai no realizado"
           />
           <LinhaSoma label="= Total realizado" value={realSalao} />
         </div>

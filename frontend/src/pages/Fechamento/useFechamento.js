@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect, useRef, useContext } from 'react';
-import { criarFechamento } from '../lib/api';
-import { ToastContext } from '../App';
+import { criarFechamento } from '../../lib/api';
+import { ToastContext } from '../../App';
 
 // ── Constantes ────────────────────────────────────────────────
 export const SALAO_VAZIO = {
@@ -199,14 +199,15 @@ export function useFechamento() {
     if (!validar()) return;
 
     const pixRetiradaAuto = salao.vendaRetirada - salao.pixRetirada;
-    const totalVendasSalao = salao.vendaSist + pixRetiradaAuto - salao.excedente;
+    const totalVendasSalao = salao.vendaSist + pixRetiradaAuto;
     const realSalao =
       salao.din -
       salao.inicial +
       salao.maq +
       salao.maqRetirada +
       salao.notinhas +
-      salao.abastecimento;
+      salao.abastecimento -
+      salao.excedente;
     const difSalao = realSalao - totalVendasSalao;
 
     const pixWebAuto = delivery.vendaWeb - delivery.pixWeb;
