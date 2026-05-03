@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-CJjqHYUx.js';
+import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-Cm2WbsuZ.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
@@ -1290,17 +1290,7 @@ function FormularioFechamento({
   ] });
 }
 
-function LinhaResumo({ label, value, destaque, sub }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `linha-resumo ${destaque ? "linha-resumo--destaque" : ""} ${sub ? "linha-resumo--sub" : ""}`, children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: label }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
-      "R$ ",
-      fmt(value)
-    ] })
-  ] });
-}
-
-function LinhaCalculo({ sinal, label, value, destaque, zero, hint }) {
+function LinhaCalculo({ sinal, label, value, destaque, hint }) {
   const val = Number(value) || 0;
   const isZero = val === 0;
   const opacidade = isZero && !destaque ? "lc--zero" : "";
@@ -1383,33 +1373,9 @@ function RaioXSalao({ relatorio }) {
         ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Maquininha salão", value: maqSalao }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Maquininha retirada", value: maqRetirada }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LinhaCalculo,
-          {
-            sinal: "+",
-            label: "Notinhas",
-            value: notinhas,
-            hint: "pedidos de funcionários não pagos"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LinhaCalculo,
-          {
-            sinal: "+",
-            label: "Abastecimento",
-            value: abastecimento,
-            hint: "valor retirado para veículos"
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LinhaCalculo,
-          {
-            sinal: "+",
-            label: "Excedente funcionários",
-            value: excedente,
-            hint: "valor cobrado a mais, subtrai no realizado"
-          }
-        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Notinhas", value: notinhas, hint: "pedidos de funcionários não pagos" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Abastecimento", value: abastecimento, hint: "valor retirado para veículos" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "−", label: "Excedente funcionários", value: excedente, hint: "valor cobrado a mais, subtrai no realizado" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaSoma, { label: "= Total realizado", value: realSalao })
       ] })
     ] }),
@@ -1454,8 +1420,6 @@ function RaioXDelivery({ relatorio, motoboys }) {
     realDelivLiq,
     difDeliv
   } = relatorio;
-  motoboys.reduce((s, m) => s + (m.maq || 0), 0);
-  motoboys.reduce((s, m) => s + (m.din || 0), 0);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-bloco", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-titulo", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx(IconBike, {}),
@@ -1464,33 +1428,9 @@ function RaioXDelivery({ relatorio, motoboys }) {
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-passo", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "raio-x-passo-label", children: "① O que o sistema esperava receber (excluindo pix automático)" }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "lc-equacao", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LinhaCalculo,
-          {
-            sinal: "+",
-            label: "Web Cardápio líquido",
-            value: pixWebAuto,
-            hint: `${fmt(vendaWeb)} total − ${fmt(pixWeb)} pix automático`
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LinhaCalculo,
-          {
-            sinal: "+",
-            label: "Brendi Açaí líquido",
-            value: pixBundiAAuto,
-            hint: `${fmt(vendaBundiA)} total − ${fmt(pixBundiA)} pix automático`
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LinhaCalculo,
-          {
-            sinal: "+",
-            label: "Brendi Pizza/Hamb líquido",
-            value: pixBundiBAuto,
-            hint: `${fmt(vendaBundiB)} total − ${fmt(pixBundiB)} pix automático`
-          }
-        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Web Cardápio líquido", value: pixWebAuto, hint: `${fmt(vendaWeb)} total − ${fmt(pixWeb)} pix automático` }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Brendi Açaí líquido", value: pixBundiAAuto, hint: `${fmt(vendaBundiA)} total − ${fmt(pixBundiA)} pix automático` }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Brendi Pizza/Hamb líquido", value: pixBundiBAuto, hint: `${fmt(vendaBundiB)} total − ${fmt(pixBundiB)} pix automático` }),
         /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaSoma, { label: "= Total esperado", value: sistDeliv })
       ] })
     ] }),
@@ -1555,7 +1495,6 @@ function ResultadoFechamento({
   const { perfil } = useAuth();
   const nomeFuncionario = perfil?.nome || perfil?.email || "Funcionário";
   const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
-  const [raioXAberto, setRaioXAberto] = reactExports.useState(!positivo);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { ref: resultadoRef, className: "fc-fade", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { ref: conteudoRef, className: "fc-resultado-wrap", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `fc-hero ${positivo ? "fc-hero--ok" : "fc-hero--alerta"}`, children: [
@@ -1571,123 +1510,38 @@ function ResultadoFechamento({
           /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: nomeFuncionario })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-resumo-grid", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-card fc-card--salao", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-card-header fc-card-header--salao", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(IconStore, {}),
-            " Salão"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-resumo-body", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Vendas mesas", value: relatorio.sistSalao }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Retirada líquida", value: relatorio.pixRetiradaAuto, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Total esperado", value: relatorio.totalVendasSalao, destaque: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-divider" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Dinheiro (bruto)", value: relatorio.dinheiroGaveta - relatorio.trocoInicial, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Maquininha salão", value: relatorio.maqSalao, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Maquininha retirada", value: relatorio.maqRetirada, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Excedente func.", value: relatorio.excedente, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Notinhas", value: relatorio.notinhas, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Abastecimento", value: relatorio.abastecimento, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Total realizado", value: relatorio.realSalao, destaque: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-divider" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Diferença", value: relatorio.difSalao, destaque: true })
-          ] })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-card fc-card--delivery", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-card-header fc-card-header--delivery", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(IconBike, {}),
-            " Delivery"
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-resumo-body", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Web Cardápio", value: relatorio.pixWebAuto, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Brendi Açaí", value: relatorio.pixBundiAAuto, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Brendi Pizza/Hamb", value: relatorio.pixBundiBAuto, sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Total esperado", value: relatorio.sistDeliv, destaque: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-divider" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Maquininhas", value: motoboys.reduce((s, m) => s + m.maq, 0), sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Dinheiro", value: motoboys.reduce((s, m) => s + m.din, 0), sub: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Total realizado", value: relatorio.realDelivLiq, destaque: true }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-divider" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaResumo, { label: "Diferença", value: relatorio.difDeliv, destaque: true })
-          ] }),
-          motoboys.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-divider", style: { margin: "16px 0" } }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-secao-label", children: "Por motoboy" }),
-            motoboys.map((m, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-resumo", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "motoboy-avatar sm", children: m.nome.charAt(0).toUpperCase() }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "motoboy-resumo-nome", children: m.nome }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "motoboy-resumo-qtd", children: [
-                m.qtd,
-                " entregas"
-              ] }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "motoboy-resumo-total", children: [
-                "R$ ",
-                fmt(m.maq + m.din + (m.gas || 0))
-              ] })
-            ] }, i))
-          ] })
-        ] })
-      ] }),
       observacao ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-obs-screenshot", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-label", children: "Observação:" }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-texto", children: observacao })
       ] }) : null
     ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-wrap", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        "button",
-        {
-          className: `raio-x-toggle ${raioXAberto ? "raio-x-toggle--aberto" : ""}`,
-          onClick: () => setRaioXAberto((v) => !v),
-          children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "raio-x-toggle-icone", children: raioXAberto ? "▲" : "▼" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: raioXAberto ? "Ocultar detalhamento" : "Ver detalhamento dos cálculos" }),
-            !positivo && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "raio-x-badge", children: "Ajuda a encontrar a falta" })
-          ]
-        }
-      ),
-      raioXAberto && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-painel", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "raio-x-intro", children: "Abaixo está o passo a passo de como cada número foi calculado. Use isso para identificar exatamente onde está a divergência." }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(RaioXSalao, { relatorio }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "raio-x-separador" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(RaioXDelivery, { relatorio, motoboys }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-bloco raio-x-bloco--final", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "raio-x-titulo", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "📊 Resumo geral" }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "lc-equacao", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              LinhaCalculo,
-              {
-                sinal: " ",
-                label: "Diferença salão",
-                value: relatorio.difSalao
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              LinhaCalculo,
-              {
-                sinal: "+",
-                label: "Diferença delivery",
-                value: relatorio.difDeliv
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaSoma, { label: "= Diferença total", value: relatorio.totalGeral })
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "raio-x-wrap", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-painel raio-x-painel--aberto", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "raio-x-intro", children: "Abaixo está o passo a passo de como cada número foi calculado. Use isso para identificar exatamente onde está a divergência." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(RaioXSalao, { relatorio }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "raio-x-separador" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(RaioXDelivery, { relatorio, motoboys }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-bloco raio-x-bloco--final", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "raio-x-titulo", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "📊 Resumo geral" }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "lc-equacao", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: " ", label: "Diferença salão", value: relatorio.difSalao }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaCalculo, { sinal: "+", label: "Diferença delivery", value: relatorio.difDeliv }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaSoma, { label: "= Diferença total", value: relatorio.totalGeral })
+        ] }),
+        !positivo && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-alerta raio-x-alerta--total", children: [
+          "O caixa fechou com ",
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
+            "R$ ",
+            fmt(Math.abs(relatorio.totalGeral))
           ] }),
-          !positivo && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-alerta raio-x-alerta--total", children: [
-            "O caixa fechou com ",
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { children: [
-              "R$ ",
-              fmt(Math.abs(relatorio.totalGeral))
-            ] }),
-            " de",
-            relatorio.totalGeral < 0 ? " falta" : " sobra",
-            ".",
-            relatorio.difSalao < -0.5 && relatorio.difDeliv < -0.5 && " A divergência está tanto no salão quanto no delivery.",
-            relatorio.difSalao < -0.5 && relatorio.difDeliv >= -0.5 && " A divergência está concentrada no salão.",
-            relatorio.difSalao >= -0.5 && relatorio.difDeliv < -0.5 && " A divergência está concentrada no delivery."
-          ] })
+          " de",
+          relatorio.totalGeral < 0 ? " falta" : " sobra",
+          ".",
+          relatorio.difSalao < -0.5 && relatorio.difDeliv < -0.5 && " A divergência está tanto no salão quanto no delivery.",
+          relatorio.difSalao < -0.5 && relatorio.difDeliv >= -0.5 && " A divergência está concentrada no salão.",
+          relatorio.difSalao >= -0.5 && relatorio.difDeliv < -0.5 && " A divergência está concentrada no delivery."
         ] })
       ] })
-    ] }),
+    ] }) }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-observacao-wrap", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("label", { className: "fc-observacao-label", children: "Observação (opcional)" }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -1703,240 +1557,61 @@ function ResultadoFechamento({
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-acoes", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn--ghost", onClick: onVoltar, children: "← Voltar e editar" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "button",
-        {
-          className: "btn btn--copiar",
-          onClick: onCopiar,
-          disabled: copiando,
-          children: copiando ? "⏳ Gerando..." : copiado ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(IconCheck, {}),
-            " Copiado!"
-          ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(IconCamera, {}),
-            " Copiar p/ WhatsApp"
-          ] })
-        }
-      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn--copiar", onClick: onCopiar, disabled: copiando, children: copiando ? "⏳ Gerando..." : copiado ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(IconCheck, {}),
+        " Copiado!"
+      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(IconCamera, {}),
+        " Copiar p/ WhatsApp"
+      ] }) }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: "btn btn--ghost", onClick: onNovoFechamento, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(IconRefresh, {}),
         " Novo fechamento"
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: `
-        /* ── Wrapper geral ── */
-        .raio-x-wrap {
-          margin: 16px 0 8px;
-        }
-
-        /* ── Botão toggle ── */
-        .raio-x-toggle {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 16px;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.10);
-          border-radius: 10px;
-          color: #94a3b8;
-          font-size: 0.875rem;
-          cursor: pointer;
-          transition: background 0.2s, color 0.2s;
-          text-align: left;
-        }
-        .raio-x-toggle:hover {
-          background: rgba(255,255,255,0.07);
-          color: #e2e8f0;
-        }
-        .raio-x-toggle--aberto {
-          border-bottom-left-radius: 0;
-          border-bottom-right-radius: 0;
-          border-bottom-color: transparent;
-          background: rgba(255,255,255,0.06);
-          color: #e2e8f0;
-        }
-        .raio-x-toggle-icone {
-          font-size: 0.7rem;
-          opacity: 0.6;
-        }
-        .raio-x-badge {
-          margin-left: auto;
-          padding: 2px 8px;
-          background: rgba(251,191,36,0.15);
-          border: 1px solid rgba(251,191,36,0.3);
-          border-radius: 20px;
-          color: #fbbf24;
-          font-size: 0.72rem;
-          white-space: nowrap;
-        }
-
-        /* ── Painel expandido ── */
-        .raio-x-painel {
+        .raio-x-wrap { margin: 16px 0 8px; }
+        .raio-x-painel--aberto {
           padding: 16px;
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.10);
-          border-top: none;
-          border-bottom-left-radius: 10px;
-          border-bottom-right-radius: 10px;
+          border-radius: 10px;
           display: flex;
           flex-direction: column;
           gap: 20px;
         }
-        .raio-x-intro {
-          margin: 0;
-          font-size: 0.8rem;
-          color: #64748b;
-          line-height: 1.5;
-        }
-        .raio-x-separador {
-          height: 1px;
-          background: rgba(255,255,255,0.07);
-        }
-
-        /* ── Bloco de cada seção ── */
-        .raio-x-bloco {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
+        .raio-x-intro { margin: 0; font-size: 0.8rem; color: #64748b; line-height: 1.5; }
+        .raio-x-separador { height: 1px; background: rgba(255,255,255,0.07); }
+        .raio-x-bloco { display: flex; flex-direction: column; gap: 14px; }
         .raio-x-bloco--final {
           padding: 14px;
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.08);
           border-radius: 8px;
         }
-        .raio-x-titulo {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #cbd5e1;
-        }
-        .raio-x-titulo svg {
-          width: 16px;
-          height: 16px;
-          opacity: 0.7;
-        }
-
-        /* ── Passo numerado ── */
-        .raio-x-passo {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .raio-x-passo-label {
-          font-size: 0.75rem;
-          color: #64748b;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-        }
-        .raio-x-passo--resultado .raio-x-passo-label {
-          color: #94a3b8;
-        }
-
-        /* ── Equação ── */
-        .lc-equacao {
-          background: rgba(0,0,0,0.2);
-          border-radius: 8px;
-          padding: 10px 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        /* ── Linha de cálculo ── */
-        .lc-linha {
-          display: flex;
-          align-items: baseline;
-          gap: 6px;
-          padding: 3px 0;
-          font-size: 0.82rem;
-          color: #94a3b8;
-          transition: opacity 0.2s;
-        }
-        .lc-linha--zero {
-          opacity: 0.38;
-        }
-        .lc-linha--destaque {
-          color: #e2e8f0;
-          font-weight: 500;
-        }
-        .lc-sinal {
-          width: 14px;
-          text-align: center;
-          flex-shrink: 0;
-          color: #475569;
-          font-weight: 600;
-          font-size: 0.9rem;
-        }
-        .lc-label {
-          flex: 1;
-          min-width: 0;
-        }
-        .lc-hint {
-          font-size: 0.72rem;
-          color: #475569;
-          font-style: italic;
-        }
-        .lc-valor {
-          font-variant-numeric: tabular-nums;
-          font-weight: 500;
-          white-space: nowrap;
-        }
-        .lc-valor--neg {
-          color: #f87171;
-        }
-
-        /* ── Linha soma (resultado parcial) ── */
-        .lc-soma {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 6px;
-          padding-top: 6px;
-          border-top: 1px solid rgba(255,255,255,0.08);
-          font-size: 0.85rem;
-          font-weight: 600;
-        }
-        .lc-soma-label {
-          color: #cbd5e1;
-        }
-        .lc-soma-valor {
-          font-variant-numeric: tabular-nums;
-        }
+        .raio-x-titulo { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
+        .raio-x-titulo svg { width: 16px; height: 16px; opacity: 0.7; }
+        .raio-x-passo { display: flex; flex-direction: column; gap: 6px; }
+        .raio-x-passo-label { font-size: 0.75rem; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+        .raio-x-passo--resultado .raio-x-passo-label { color: #94a3b8; }
+        .lc-equacao { background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .lc-linha { display: flex; align-items: baseline; gap: 6px; padding: 3px 0; font-size: 0.82rem; color: #94a3b8; transition: opacity 0.2s; }
+        .lc-linha--zero { opacity: 0.38; }
+        .lc-linha--destaque { color: #e2e8f0; font-weight: 500; }
+        .lc-sinal { width: 14px; text-align: center; flex-shrink: 0; color: #475569; font-weight: 600; font-size: 0.9rem; }
+        .lc-label { flex: 1; min-width: 0; }
+        .lc-hint { font-size: 0.72rem; color: #475569; font-style: italic; }
+        .lc-valor { font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+        .lc-valor--neg { color: #f87171; }
+        .lc-soma { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.85rem; font-weight: 600; }
+        .lc-soma-label { color: #cbd5e1; }
+        .lc-soma-valor { font-variant-numeric: tabular-nums; }
         .lc-soma-valor--neg { color: #f87171; }
         .lc-soma-valor--pos { color: #4ade80; }
         .lc-soma-valor--zero { color: #4ade80; }
-
-        /* ── Alertas e confirmações ── */
-        .raio-x-alerta {
-          margin-top: 8px;
-          padding: 10px 12px;
-          background: rgba(248,113,113,0.08);
-          border: 1px solid rgba(248,113,113,0.2);
-          border-radius: 8px;
-          font-size: 0.8rem;
-          color: #fca5a5;
-          line-height: 1.5;
-        }
-        .raio-x-alerta--total {
-          background: rgba(248,113,113,0.12);
-          border-color: rgba(248,113,113,0.3);
-          font-size: 0.85rem;
-        }
-        .raio-x-ok {
-          margin-top: 8px;
-          padding: 10px 12px;
-          background: rgba(74,222,128,0.07);
-          border: 1px solid rgba(74,222,128,0.2);
-          border-radius: 8px;
-          font-size: 0.8rem;
-          color: #86efac;
-          line-height: 1.5;
-        }
+        .raio-x-alerta { margin-top: 8px; padding: 10px 12px; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 8px; font-size: 0.8rem; color: #fca5a5; line-height: 1.5; }
+        .raio-x-alerta--total { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.3); font-size: 0.85rem; }
+        .raio-x-ok { margin-top: 8px; padding: 10px 12px; background: rgba(74,222,128,0.07); border: 1px solid rgba(74,222,128,0.2); border-radius: 8px; font-size: 0.8rem; color: #86efac; line-height: 1.5; }
       ` })
   ] });
 }
