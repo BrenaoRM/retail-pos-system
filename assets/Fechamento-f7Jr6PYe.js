@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-Cm2WbsuZ.js';
+import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador } from './index-CSDLwTt7.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
@@ -752,19 +752,9 @@ const IconBike = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "1
   /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M15 6a1 1 0 0 0-1 1v5.5l-5-3.5" }),
   /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M9 6h5l3 5.5" })
 ] });
-const IconCheck = () => /* @__PURE__ */ jsxRuntimeExports.jsx("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2.5", strokeLinecap: "round", strokeLinejoin: "round", children: /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "20 6 9 17 4 12" }) });
-const IconAlert = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "17", height: "17", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-  /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "12", r: "10" }),
-  /* @__PURE__ */ jsxRuntimeExports.jsx("line", { x1: "12", y1: "8", x2: "12", y2: "12" }),
-  /* @__PURE__ */ jsxRuntimeExports.jsx("line", { x1: "12", y1: "16", x2: "12.01", y2: "16" })
-] });
 const IconRefresh = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
   /* @__PURE__ */ jsxRuntimeExports.jsx("polyline", { points: "1 4 1 10 7 10" }),
   /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M3.51 15a9 9 0 1 0 .49-3.65" })
-] });
-const IconCamera = () => /* @__PURE__ */ jsxRuntimeExports.jsxs("svg", { width: "15", height: "15", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", children: [
-  /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" }),
-  /* @__PURE__ */ jsxRuntimeExports.jsx("circle", { cx: "12", cy: "13", r: "4" })
 ] });
 
 function MotoboyNomeInput({ value, onChange, placeholder }) {
@@ -1484,37 +1474,18 @@ function ResultadoFechamento({
   conteudoRef,
   relatorio,
   motoboys,
-  copiando,
-  copiado,
   observacao,
   onObservacaoChange,
   onVoltar,
   onCopiar,
   onNovoFechamento
 }) {
-  const { perfil } = useAuth();
-  const nomeFuncionario = perfil?.nome || perfil?.email || "Funcionário";
   const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { ref: resultadoRef, className: "fc-fade", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { ref: conteudoRef, className: "fc-resultado-wrap", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `fc-hero ${positivo ? "fc-hero--ok" : "fc-hero--alerta"}`, children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-hero-icone", children: positivo ? /* @__PURE__ */ jsxRuntimeExports.jsx(IconCheck, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx(IconAlert, {}) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `fc-hero-valor ${positivo ? "fc-hero-valor--ok" : "fc-hero-valor--alerta"}`, children: [
-          "R$ ",
-          fmt(relatorio.totalGeral)
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-hero-label", children: positivo ? "Caixa fechado · Tudo confere" : "Divergência encontrada" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "fc-hero-data", children: relatorio.dataFechamento }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-hero-operador", children: [
-          "Fechado por: ",
-          /* @__PURE__ */ jsxRuntimeExports.jsx("strong", { children: nomeFuncionario })
-        ] })
-      ] }),
-      observacao ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-obs-screenshot", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-label", children: "Observação:" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-texto", children: observacao })
-      ] }) : null
-    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: conteudoRef, className: "fc-resultado-wrap", children: observacao ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-obs-screenshot", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-label", children: "Observação:" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-texto", children: observacao })
+    ] }) : null }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "raio-x-wrap", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-painel raio-x-painel--aberto", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "raio-x-intro", children: "Abaixo está o passo a passo de como cada número foi calculado. Use isso para identificar exatamente onde está a divergência." }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(RaioXSalao, { relatorio }),
@@ -1557,13 +1528,7 @@ function ResultadoFechamento({
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-acoes", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn--ghost", onClick: onVoltar, children: "← Voltar e editar" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn--copiar", onClick: onCopiar, disabled: copiando, children: copiando ? "⏳ Gerando..." : copiado ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(IconCheck, {}),
-        " Copiado!"
-      ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(IconCamera, {}),
-        " Copiar p/ WhatsApp"
-      ] }) }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn--copiar", onClick: () => window.print(), children: "🖨️ Imprimir" }),
       /* @__PURE__ */ jsxRuntimeExports.jsxs("button", { className: "btn btn--ghost", onClick: onNovoFechamento, children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(IconRefresh, {}),
         " Novo fechamento"
