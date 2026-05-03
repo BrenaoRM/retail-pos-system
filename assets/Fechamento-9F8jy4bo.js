@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-VfX6PN0P.js';
+import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador, u as useAuth } from './index-CJjqHYUx.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
@@ -27,7 +27,7 @@ const DELIVERY_VAZIO = {
 };
 
 const MOTOBOY_NOVO = (n) => ({
-  nome: ``,
+  nome: `Entregador ${n}`,
   qtd: 0,
   maq: 0,
   din: 0,
@@ -78,7 +78,7 @@ function useFechamento() {
     rascunho?.delivery || DELIVERY_VAZIO
   );
   const [motoboys, setMotoboys] = reactExports.useState(
-    rascunho?.motoboys || [MOTOBOY_NOVO()]
+    rascunho?.motoboys || [MOTOBOY_NOVO(1)]
   );
   const [brendiAtivo, setBrendiAtivo] = reactExports.useState('A');
   const [relatorio, setRelatorio] = reactExports.useState(null);
@@ -86,6 +86,7 @@ function useFechamento() {
   const [copiando, setCopiando] = reactExports.useState(false);
   const [copiado, setCopiado] = reactExports.useState(false);
   const [confirmarNovo, setConfirmarNovo] = reactExports.useState(false);
+  const [observacao, setObservacao] = reactExports.useState('');
 
   // Refs
   const toque = reactExports.useRef(null);
@@ -194,14 +195,15 @@ function useFechamento() {
     if (!validar()) return;
 
     const pixRetiradaAuto = salao.vendaRetirada - salao.pixRetirada;
-    const totalVendasSalao = salao.vendaSist + pixRetiradaAuto - salao.excedente;
+    const totalVendasSalao = salao.vendaSist + pixRetiradaAuto;
     const realSalao =
       salao.din -
       salao.inicial +
       salao.maq +
       salao.maqRetirada +
       salao.notinhas +
-      salao.abastecimento;
+      salao.abastecimento -
+      salao.excedente;
     const difSalao = realSalao - totalVendasSalao;
 
     const pixWebAuto = delivery.vendaWeb - delivery.pixWeb;
@@ -240,6 +242,7 @@ function useFechamento() {
       difDeliv,
       totalGeral: difSalao + difDeliv,
       dataFechamento: dataReferencia(),
+      observacao,
       motoboys,
       trocoInicial: salao.inicial,
       maqSalao: salao.maq,
@@ -302,9 +305,10 @@ function useFechamento() {
   function novoFechamento() {
     setSalao(SALAO_VAZIO);
     setDelivery(DELIVERY_VAZIO);
-    setMotoboys([MOTOBOY_NOVO()]);
+    setMotoboys([MOTOBOY_NOVO(1)]);
     setRelatorio(null);
     setErros({});
+    setObservacao('');
     setEtapa('formulario');
     setAba('salao');
     setConfirmarNovo(false);
@@ -338,6 +342,8 @@ function useFechamento() {
     setBrendiAtivo,
     setErros,
     setConfirmarNovo,
+    observacao,
+    setObservacao,
 
     // Refs
     resultadoRef,
@@ -1360,15 +1366,6 @@ function RaioXSalao({ relatorio }) {
             hint: `${fmt(vendaRetirada)} total − ${fmt(pixRetirada)} pix automático`
           }
         ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          LinhaCalculo,
-          {
-            sinal: "−",
-            label: "Excedente funcionários",
-            value: excedente,
-            hint: "valor já cobrado a mais, desconta do esperado"
-          }
-        ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaSoma, { label: "= Total esperado", value: totalVendasSalao })
       ] })
     ] }),
@@ -1402,6 +1399,15 @@ function RaioXSalao({ relatorio }) {
             label: "Abastecimento",
             value: abastecimento,
             hint: "valor retirado para veículos"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          LinhaCalculo,
+          {
+            sinal: "+",
+            label: "Excedente funcionários",
+            value: excedente,
+            hint: "valor cobrado a mais, subtrai no realizado"
           }
         ),
         /* @__PURE__ */ jsxRuntimeExports.jsx(LinhaSoma, { label: "= Total realizado", value: realSalao })
