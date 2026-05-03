@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador } from './index-CSDLwTt7.js';
+import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador } from './index-DLWTTvxX.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
@@ -708,8 +708,9 @@ function Campo({ label, hint, value, onChange, erro }) {
             setDisplay(value ? String(value).replace(".", ",") : "");
           },
           onChange: (e) => {
-            setDisplay(e.target.value);
-            onChange(parse(e.target.value));
+            const raw = e.target.value.replace(".", ",");
+            setDisplay(raw);
+            onChange(parse(raw));
           },
           onBlur: () => {
             setFocused(false);
@@ -950,10 +951,8 @@ function FormularioFechamento({
   }
   function editarMotoboy(i, campo, val) {
     const next = [...motoboys];
-    next[i] = {
-      ...next[i],
-      [campo]: campo === "nome" ? val : Number(val) || 0
-    };
+    const parsed = campo === "nome" ? val : typeof val === "string" && isNaN(Number(val.replace(",", "."))) ? val : campo === "qtd" ? parseInt(val) || 0 : typeof val === "number" ? val : parseFloat(String(val).replace(",", ".")) || 0;
+    next[i] = { ...next[i], [campo]: parsed };
     onMotoboysChange(next);
   }
   function addMotoboy() {
@@ -1260,10 +1259,18 @@ function FormularioFechamento({
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
                         "input",
                         {
-                          type: "number",
+                          type: "text",
+                          inputMode: campo === "qtd" ? "numeric" : "decimal",
                           placeholder: "0",
                           value: m[campo] || "",
-                          onChange: (e) => editarMotoboy(i, campo, e.target.value)
+                          onChange: (e) => {
+                            const raw = campo === "qtd" ? e.target.value.replace(/[^0-9]/g, "") : e.target.value.replace(".", ",").replace(/[^0-9,]/g, "");
+                            editarMotoboy(i, campo, raw);
+                          },
+                          onBlur: (e) => {
+                            const num = campo === "qtd" ? parseInt(e.target.value) || 0 : parse(e.target.value);
+                            editarMotoboy(i, campo, num);
+                          }
                         }
                       )
                     ] }, campo)) })
@@ -1435,7 +1442,7 @@ function RaioXDelivery({ relatorio, motoboys }) {
               sinal: "+",
               label: m.nome || `Entregador ${i + 1}`,
               value: total,
-              hint: `maq R$ ${fmt(m.maq)} + din R$ ${fmt(m.din)}`
+              hint: `${m.qtd || 0} entrega${(m.qtd || 0) !== 1 ? "s" : ""} · maq R$ ${fmt(m.maq)} + din R$ ${fmt(m.din)}`
             },
             i
           );
@@ -1482,10 +1489,7 @@ function ResultadoFechamento({
 }) {
   const positivo = relatorio && Math.abs(relatorio.totalGeral) < 1;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { ref: resultadoRef, className: "fc-fade", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: conteudoRef, className: "fc-resultado-wrap", children: observacao ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-obs-screenshot", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-label", children: "Observação:" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "fc-obs-screenshot-texto", children: observacao })
-    ] }) : null }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { ref: conteudoRef }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "raio-x-wrap", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "raio-x-painel raio-x-painel--aberto", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "raio-x-intro", children: "Abaixo está o passo a passo de como cada número foi calculado. Use isso para identificar exatamente onde está a divergência." }),
       /* @__PURE__ */ jsxRuntimeExports.jsx(RaioXSalao, { relatorio }),
@@ -1525,6 +1529,231 @@ function ResultadoFechamento({
           rows: 3
         }
       )
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-only", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-header", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "print-titulo", children: "Fechamento de Caixa" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "print-data", children: relatorio.dataFechamento }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: `print-resultado ${positivo ? "print-resultado--ok" : "print-resultado--alerta"}`, children: [
+          positivo ? "CAIXA FECHADO · TUDO CONFERE" : "DIVERGÊNCIA ENCONTRADA",
+          " — ",
+          "R$ ",
+          fmt(relatorio.totalGeral)
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-secao", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "print-secao-titulo", children: "SALÃO" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-grupo", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "print-grupo-label", children: "① O que o sistema esperava receber" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Vendas mesas (sistema)" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.sistSalao)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "Retirada líquida (",
+              fmt(relatorio.vendaRetirada),
+              " − ",
+              fmt(relatorio.pixRetirada),
+              " pix)"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.pixRetiradaAuto)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha print-linha--total", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "= Total esperado" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.totalVendasSalao)
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-grupo", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "print-grupo-label", children: "② O que foi realmente apurado" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "Dinheiro na gaveta (",
+              fmt(relatorio.dinheiroGaveta),
+              " − ",
+              fmt(relatorio.trocoInicial),
+              " troco)"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.dinheiroGaveta - relatorio.trocoInicial)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Maquininha salão" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.maqSalao)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Maquininha retirada" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.maqRetirada)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Notinhas (pedidos de funcionários)" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.notinhas)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Abastecimento" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.abastecimento)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Excedente funcionários (−)" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.excedente)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha print-linha--total", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "= Total realizado" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.realSalao)
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha print-linha--diferenca", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Diferença salão" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: relatorio.difSalao < 0 ? "print-neg" : "print-pos", children: [
+            "R$ ",
+            fmt(relatorio.difSalao)
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-secao", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "print-secao-titulo", children: "DELIVERY" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-grupo", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "print-grupo-label", children: "① O que o sistema esperava receber" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "Web Cardápio (",
+              fmt(relatorio.vendaWeb),
+              " − ",
+              fmt(relatorio.pixWeb),
+              " pix)"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.pixWebAuto)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "Brendi Açaí (",
+              fmt(relatorio.vendaBundiA),
+              " − ",
+              fmt(relatorio.pixBundiA),
+              " pix)"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.pixBundiAAuto)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "Brendi Pizza/Hamb (",
+              fmt(relatorio.vendaBundiB),
+              " − ",
+              fmt(relatorio.pixBundiB),
+              " pix)"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.pixBundiBAuto)
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha print-linha--total", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "= Total esperado" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.sistDeliv)
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-grupo", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "print-grupo-label", children: "② O que os motoboys trouxeram" }),
+          motoboys.map((m, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              m.nome || `Entregador ${i + 1}`,
+              " — ",
+              m.qtd || 0,
+              " entrega",
+              (m.qtd || 0) !== 1 ? "s" : "",
+              " (maq R$ ",
+              fmt(m.maq),
+              " + din R$ ",
+              fmt(m.din),
+              ")"
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt((m.maq || 0) + (m.din || 0))
+            ] })
+          ] }, i)),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha print-linha--total", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "= Total realizado" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+              "R$ ",
+              fmt(relatorio.realDelivLiq)
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha print-linha--diferenca", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Diferença delivery" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: relatorio.difDeliv < 0 ? "print-neg" : "print-pos", children: [
+            "R$ ",
+            fmt(relatorio.difDeliv)
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-secao print-secao--final", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "print-secao-titulo", children: "RESUMO GERAL" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Diferença salão" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            "R$ ",
+            fmt(relatorio.difSalao)
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Diferença delivery" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            "R$ ",
+            fmt(relatorio.difDeliv)
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-linha print-linha--grande", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "DIFERENÇA TOTAL" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: relatorio.totalGeral < 0 ? "print-neg" : relatorio.totalGeral > 0 ? "print-pos" : "", children: [
+            "R$ ",
+            fmt(relatorio.totalGeral)
+          ] })
+        ] })
+      ] }),
+      observacao ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "print-observacao", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "print-observacao-label", children: "Observação:" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "print-observacao-texto", children: observacao })
+      ] }) : null
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "fc-acoes", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { className: "btn btn--ghost", onClick: onVoltar, children: "← Voltar e editar" }),
@@ -1577,6 +1806,58 @@ function ResultadoFechamento({
         .raio-x-alerta { margin-top: 8px; padding: 10px 12px; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); border-radius: 8px; font-size: 0.8rem; color: #fca5a5; line-height: 1.5; }
         .raio-x-alerta--total { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.3); font-size: 0.85rem; }
         .raio-x-ok { margin-top: 8px; padding: 10px 12px; background: rgba(74,222,128,0.07); border: 1px solid rgba(74,222,128,0.2); border-radius: 8px; font-size: 0.8rem; color: #86efac; line-height: 1.5; }
+
+        /* ── IMPRESSÃO ── */
+        .print-only { display: none; }
+
+        @media print {
+          /* Esconde tudo da tela */
+          body * { visibility: hidden; }
+
+          /* Mostra só o bloco de impressão */
+          .print-only, .print-only * { visibility: visible !important; }
+          .print-only {
+            display: block !important;
+            position: static;
+            width: 100%;
+            padding: 32px 40px;
+            font-family: 'Arial', sans-serif;
+            color: #111;
+            background: #fff;
+          }
+
+          .print-header { text-align: center; margin-bottom: 28px; border-bottom: 2px solid #111; padding-bottom: 16px; }
+          .print-titulo { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+          .print-data { font-size: 13px; color: #555; margin: 0 0 10px; }
+          .print-resultado { font-size: 15px; font-weight: 700; padding: 6px 14px; display: inline-block; border-radius: 4px; }
+          .print-resultado--ok { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+          .print-resultado--alerta { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+          .print-secao { margin-bottom: 22px; }
+          .print-secao-titulo { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; color: #444; border-bottom: 1px solid #ccc; padding-bottom: 4px; margin: 0 0 10px; }
+          .print-secao--final { border-top: 2px solid #111; padding-top: 12px; }
+
+          .print-grupo { margin-bottom: 12px; }
+          .print-grupo-label { font-size: 10px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+
+          .print-linha { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px dotted #e5e5e5; }
+          .print-linha span:first-child { color: #333; }
+          .print-linha span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+          .print-linha--total { border-bottom: 1px solid #999; border-top: 1px solid #999; font-weight: 700; font-size: 13px; padding: 5px 0; margin-top: 2px; }
+          .print-linha--total span { font-weight: 700; }
+
+          .print-linha--diferenca { font-size: 13px; font-weight: 700; padding: 6px 0; border-bottom: none; }
+
+          .print-linha--grande { font-size: 15px; font-weight: 700; padding: 8px 0; border-top: 1px solid #111; margin-top: 4px; }
+
+          .print-neg { color: #b91c1c; }
+          .print-pos { color: #065f46; }
+
+          .print-observacao { margin-top: 24px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; background: #f9f9f9; }
+          .print-observacao-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #555; display: block; margin-bottom: 4px; }
+          .print-observacao-texto { font-size: 13px; color: #222; }
+        }
       ` })
   ] });
 }
