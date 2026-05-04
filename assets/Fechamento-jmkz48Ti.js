@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador } from './index-PFVFRSeY.js';
+import { T as ToastContext, _ as __vitePreload, c as criarFechamento, s as salvarEntregador, b as listarEntregadores, d as removerEntregador } from './index-D-yZMlDn.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
