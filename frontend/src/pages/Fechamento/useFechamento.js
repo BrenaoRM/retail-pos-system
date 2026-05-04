@@ -3,7 +3,7 @@
  * Centraliza estado, cálculos e persistência
  */
 
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext, useCallback, useMemo } from 'react';
 import { criarFechamento } from '../../lib/api';
 import { ToastContext } from '../../App';
 
@@ -72,18 +72,13 @@ function carregarRascunho() {
 // ── Hook Principal ───────────────────────────────────────────
 export function useFechamento() {
   const toast = useContext(ToastContext);
-  const rascunho = carregarRascunho();
 
-  // Estado Principal
+  // carregarRascunho só na inicialização — não recalcula a cada render
   const [etapa, setEtapa] = useState('formulario');
   const [aba, setAba] = useState('salao');
-  const [salao, setSalao] = useState(rascunho?.salao || SALAO_VAZIO);
-  const [delivery, setDelivery] = useState(
-    rascunho?.delivery || DELIVERY_VAZIO
-  );
-  const [motoboys, setMotoboys] = useState(
-    rascunho?.motoboys || [MOTOBOY_NOVO(1)]
-  );
+  const [salao, setSalao] = useState(() => carregarRascunho()?.salao || SALAO_VAZIO);
+  const [delivery, setDelivery] = useState(() => carregarRascunho()?.delivery || DELIVERY_VAZIO);
+  const [motoboys, setMotoboys] = useState(() => carregarRascunho()?.motoboys || [MOTOBOY_NOVO(1)]);
   const [brendiAtivo, setBrendiAtivo] = useState('A');
   const [relatorio, setRelatorio] = useState(null);
   const [erros, setErros] = useState({});
@@ -118,8 +113,8 @@ export function useFechamento() {
     }
   }, [etapa]);
 
-  // ── Subtotais para toggle ──────────────────────────────────
-  const subtotais = {
+  // ── Subtotais para toggle — memoizado para não recalcular a cada render ──
+  const subtotais = useMemo(() => ({
     salao:
       salao.maq +
       salao.maqRetirada +
@@ -132,29 +127,31 @@ export function useFechamento() {
       delivery.pixBundiA +
       delivery.vendaBundiB -
       delivery.pixBundiB,
-  };
+  }), [salao, delivery]);
 
   // ── Touch para navegação de abas ───────────────────────────
-  function onTouchStart(e) {
+  const onTouchStart = useCallback((e) => {
     toque.current = e.touches[0].clientX;
-  }
+  }, []);
 
-  function onTouchEnd(e) {
+  const onTouchEnd = useCallback((e) => {
     if (!toque.current) return;
     const diff = toque.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) < 50) return;
 
     const abas = ['salao', 'delivery'];
-    const idx = abas.indexOf(aba);
-
-    if (diff > 0 && idx < abas.length - 1) setAba(abas[idx + 1]);
-    if (diff < 0 && idx > 0) setAba(abas[idx - 1]);
+    setAba((prev) => {
+      const idx = abas.indexOf(prev);
+      if (diff > 0 && idx < abas.length - 1) return abas[idx + 1];
+      if (diff < 0 && idx > 0) return abas[idx - 1];
+      return prev;
+    });
 
     toque.current = null;
-  }
+  }, []);
 
   // ── Manipulação de Motoboys ────────────────────────────────
-  function editarMotoboy(i, campo, val) {
+  const editarMotoboy = useCallback((i, campo, val) => {
     setMotoboys((prev) => {
       const next = [...prev];
       next[i] = {
@@ -163,18 +160,18 @@ export function useFechamento() {
       };
       return next;
     });
-  }
+  }, []);
 
-  function addMotoboy() {
+  const addMotoboy = useCallback(() => {
     setMotoboys((p) => [...p, MOTOBOY_NOVO(p.length + 1)]);
-  }
+  }, []);
 
-  function removeMotoboy() {
+  const removeMotoboy = useCallback(() => {
     setMotoboys((p) => (p.length > 1 ? p.slice(0, -1) : p));
-  }
+  }, []);
 
   // ── Validação ──────────────────────────────────────────────
-  function validar() {
+  const validar = useCallback(() => {
     const e = {};
 
     if (!salao.vendaSist || salao.vendaSist <= 0) {
@@ -192,10 +189,10 @@ export function useFechamento() {
 
     setErros(e);
     return Object.keys(e).length === 0;
-  }
+  }, [salao.vendaSist, delivery.vendaWeb, delivery.vendaBundiA, delivery.vendaBundiB]);
 
   // ── Cálculo Principal ──────────────────────────────────────
-  async function calcular() {
+  const calcular = useCallback(async () => {
     if (!validar()) return;
 
     const pixRetiradaAuto = salao.vendaRetirada - salao.pixRetirada;
@@ -256,17 +253,16 @@ export function useFechamento() {
     setRelatorio(dados);
     setEtapa('resultado');
 
-    // Salva no servidor
     try {
       await criarFechamento(dados);
       toast?.('Fechamento salvo com sucesso!', 'ok');
     } catch {
       toast?.('Não foi possível salvar no servidor.', 'erro');
     }
-  }
+  }, [salao, delivery, motoboys, observacao, validar, toast]);
 
   // ── Copiar Imagem para Clipboard ───────────────────────────
-  async function copiarImagem() {
+  const copiarImagem = useCallback(async () => {
     const el = conteudoRef.current;
     if (!el) return;
 
@@ -289,7 +285,6 @@ export function useFechamento() {
           toast?.('Imagem copiada!', 'ok');
           setTimeout(() => setCopiado(false), 3000);
         } catch {
-          // Fallback: download
           const url = URL.createObjectURL(blob);
           Object.assign(document.createElement('a'), {
             href: url,
@@ -303,10 +298,10 @@ export function useFechamento() {
     } catch {
       setCopiando(false);
     }
-  }
+  }, [toast]);
 
   // ── Novo Fechamento ───────────────────────────────────────
-  function novoFechamento() {
+  const novoFechamento = useCallback(() => {
     setSalao(SALAO_VAZIO);
     setDelivery(DELIVERY_VAZIO);
     setMotoboys([MOTOBOY_NOVO(1)]);
@@ -320,7 +315,7 @@ export function useFechamento() {
     try {
       sessionStorage.removeItem(STORAGE_KEY);
     } catch {}
-  }
+  }, []);
 
   return {
     // Estado
