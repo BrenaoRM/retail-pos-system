@@ -1,5 +1,5 @@
 import { r as reactExports, j as jsxRuntimeExports } from './vendor-jF1s2-c6.js';
-import { T as ToastContext, c as criarFechamento, _ as __vitePreload, s as salvarEntregador, b as listarEntregadores, d as removerEntregador } from './index-BtucOAKh.js';
+import { T as ToastContext, c as criarFechamento, _ as __vitePreload, s as salvarEntregador, b as listarEntregadores, d as removerEntregador } from './index-BzZEWFWb.js';
 import { f as fmt, p as parse } from './format-CcxP-_eH.js';
 import './supabase-1T9tw6ve.js';
 
@@ -878,6 +878,76 @@ function MotoboyNomeInput({ value, onChange, placeholder }) {
   ] });
 }
 
+function MotoboyInputMonetario({ value, onChange }) {
+  const [focused, setFocused] = reactExports.useState(false);
+  const [display, setDisplay] = reactExports.useState("");
+  reactExports.useEffect(() => {
+    if (!focused) setDisplay(value ? fmt(value) : "");
+  }, [value, focused]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "input",
+    {
+      type: "text",
+      inputMode: "decimal",
+      placeholder: "0,00",
+      value: display,
+      onFocus: () => {
+        setFocused(true);
+        setDisplay(value ? String(value).replace(".", ",") : "");
+      },
+      onChange: (e) => {
+        const raw = e.target.value.replace(".", ",");
+        setDisplay(raw);
+        onChange(parse(raw));
+      },
+      onBlur: () => {
+        setFocused(false);
+        setDisplay(value ? fmt(value) : "");
+      }
+    }
+  );
+}
+function MotoboyCard({ motoboy: m, index: i, onNomeChange, onCampoChange }) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-card", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-topo", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "motoboy-avatar", children: m.nome.charAt(0).toUpperCase() }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        MotoboyNomeInput,
+        {
+          value: m.nome,
+          placeholder: `Entregador ${i + 1}`,
+          onChange: onNomeChange
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-campos", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-campo", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Entregas" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "input",
+          {
+            type: "text",
+            inputMode: "numeric",
+            placeholder: "0",
+            value: m.qtd || "",
+            onChange: (e) => {
+              const raw = e.target.value.replace(/[^0-9]/g, "");
+              onCampoChange("qtd", parseInt(raw) || 0);
+            }
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-campo", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Maquininha" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(MotoboyInputMonetario, { value: m.maq, onChange: (v) => onCampoChange("maq", v) })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-campo", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Dinheiro" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(MotoboyInputMonetario, { value: m.din, onChange: (v) => onCampoChange("din", v) })
+      ] })
+    ] })
+  ] });
+}
 const ABAS = [
   { id: "salao", label: "Salão", Icon: IconStore },
   { id: "delivery", label: "Delivery", Icon: IconBike }
@@ -1244,43 +1314,16 @@ function FormularioFechamento({
                       /* @__PURE__ */ jsxRuntimeExports.jsx("button", { onClick: addMotoboy, children: "+" })
                     ] })
                   ] }),
-                  motoboys.map((m, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-card", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-topo", children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "motoboy-avatar", children: m.nome.charAt(0).toUpperCase() }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        MotoboyNomeInput,
-                        {
-                          value: m.nome,
-                          placeholder: `Entregador ${i + 1}`,
-                          onChange: (v) => editarMotoboy(i, "nome", v)
-                        }
-                      )
-                    ] }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "motoboy-campos", children: [
-                      ["qtd", "Entregas"],
-                      ["maq", "Maquininha"],
-                      ["din", "Dinheiro"]
-                    ].map(([campo, lbl]) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "motoboy-campo", children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: lbl }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        "input",
-                        {
-                          type: "text",
-                          inputMode: campo === "qtd" ? "numeric" : "decimal",
-                          placeholder: "0",
-                          value: m[campo] || "",
-                          onChange: (e) => {
-                            const raw = campo === "qtd" ? e.target.value.replace(/[^0-9]/g, "") : e.target.value.replace(".", ",").replace(/[^0-9,]/g, "");
-                            editarMotoboy(i, campo, raw);
-                          },
-                          onBlur: (e) => {
-                            const num = campo === "qtd" ? parseInt(e.target.value) || 0 : parse(e.target.value);
-                            editarMotoboy(i, campo, num);
-                          }
-                        }
-                      )
-                    ] }, campo)) })
-                  ] }, i))
+                  motoboys.map((m, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    MotoboyCard,
+                    {
+                      motoboy: m,
+                      index: i,
+                      onNomeChange: (v) => editarMotoboy(i, "nome", v),
+                      onCampoChange: (campo, num) => editarMotoboy(i, campo, num)
+                    },
+                    i
+                  ))
                 ] })
               ] }) })
             ]
