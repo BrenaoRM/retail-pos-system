@@ -15,8 +15,8 @@ export default defineConfig({
         theme_color: '#0f1117',
         background_color: '#0f1117',
         display: 'standalone',
-        start_url: '/Big-Burguer/',
-        scope: '/Big-Burguer/',
+        start_url: '/retail-pos-system/',
+        scope: '/retail-pos-system/',
         orientation: 'portrait',
         icons: [
           {
@@ -47,7 +47,7 @@ export default defineConfig({
     }),
   ],
 
-  base: '/Big-Burguer/',
+  base: '/retail-pos-system/',
 
   build: {
     rollupOptions: {
