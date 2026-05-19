@@ -107,7 +107,7 @@ Deno.serve(async (req: Request) => {
     );
 
     const { error: resetError } = await supabaseAnon.auth.resetPasswordForEmail(email, {
-      redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://brenao28.github.io/Big-Burguer'}/auth-redirect.html`,
+      redirectTo: `${Deno.env.get('SITE_URL') ?? 'https://brenaorm.github.io/retail-pos-system'}/auth-redirect.html`,
     });
 
     if (resetError) {

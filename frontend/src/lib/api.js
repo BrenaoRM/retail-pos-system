@@ -45,7 +45,7 @@ export async function registrar(email, password, nome) {
     password,
     options: {
       data: { nome, perfil: 'gerente' },
-      emailRedirectTo: 'https://brenao28.github.io/Big-Burguer/#/login',
+      emailRedirectTo: 'https://brenaorm.github.io/retail-pos-system/#/login',
     },
   });
   if (error) throw error;
@@ -61,7 +61,7 @@ export async function logout() {
 /** Recuperação de senha por email */
 export async function recuperarSenha(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: 'https://brenao28.github.io/Big-Burguer/auth-redirect.html',
+    redirectTo: 'https://brenaorm.github.io/retail-pos-system/auth-redirect.html',
   });
   if (error) throw error;
 }
