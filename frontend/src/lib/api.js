@@ -118,16 +118,6 @@ export async function removerFuncionario(funcionarioId) {
   return callFunction('gerenciar-equipe', { action: 'remover', funcionarioId });
 }
 
-// ── Mercado Pago ──────────────────────────────────────────────
-
-/**
- * Cria uma preferência de pagamento no Mercado Pago
- * e retorna o link de checkout (init_point).
- */
-export async function criarPreferenciaMp({ titulo, preco, userId, userEmail }) {
-  return callFunction('criar-preferencia-mp', { titulo, preco, userId, userEmail });
-}
-
 // ── Mercado Pago — Assinatura ─────────────────────────────────
 
 /**
